@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "experimentalDecorators": true,
+    "module": "es2020",
+    "lib": [
+      "es2022",
+      "dom",
+      "dom.iterable"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationDir": "./",
+    "strictPropertyInitialization": false,
+    "strict": true,
+    "baseUrl": ".",
+    "types": [],
+  },
+  "include": [
+    "src/*.ts",
+  ],
+  "exclude": []
+}

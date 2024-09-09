@@ -24,6 +24,9 @@ Rails.application.routes.draw do
     resources :multi, only: [:create]
     resources :select_panel_items, only: [:index]
 
+    resources :vcjs, only: [:index]
+    # mount Vcjs::Engine, at: "/vcjs"
+
     # generic form submission path
     post "/form_handler", to: "form_handler#form_action", as: :generic_form_submission
 

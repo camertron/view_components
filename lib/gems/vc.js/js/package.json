@@ -1,0 +1,24 @@
+{
+    "name": "vc.js",
+    "version": "0.1.0",
+    "description": "Rack middleware for rendering View Components with JavaScript.",
+    "main": "dist/vcjs.js",
+    "module": "dist/vcjs.js",
+    "types": "dist/vcjs.d.ts",
+    "keywords": [
+      "rails",
+      "view_components",
+      "components",
+      "library",
+      "design-system"
+    ],
+    "author": "GitHub, Inc.",
+    "license": "MIT",
+    "scripts": {
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+      "tsx": "^4.19.0"
+    }
+  }

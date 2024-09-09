@@ -9,6 +9,7 @@ require "sprockets/railtie"
 require "view_component"
 require "primer/view_components"
 require "primer/view_components/engine"
+require "vcjs/engine"
 require "octicons"
 require_relative "../../lib/primer/yard"
 
@@ -101,6 +102,8 @@ module Demo
         require "primer/yard/lookbook_docs_helper"
         Lookbook::PageHelper.include(Primer::Yard::LookbookDocsHelper)
       end
+
+      config.action_cable.mount_path = '/cable'
     end
   end
 end
