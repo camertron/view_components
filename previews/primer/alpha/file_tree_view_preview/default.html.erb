@@ -1,0 +1,12 @@
+<div style="max-width: 400px">
+  <%= render(Primer::Alpha::FileTreeView.new) do |tree_view| %>
+    <% tree_view.with_directory(label: "src", expanded: true) do |dir| %>
+      <% dir.with_file(label: "button.rb") %>
+      <% dir.with_file(label: "icon_button.rb") %>
+    <% end %>
+
+    <% tree_view.with_file(label: "action_list.rb") do |item| %>
+      <% item.with_trailing_visual_icon(icon: :"diff-modified") %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,12 @@
+<%= render(Primer::Alpha::TreeView::Item.new(**@system_arguments)) do |item| %>
+  <% if leading_visual? %>
+    <% item.with_leading_visual do %>
+      <%= leading_visual %>
+    <% end %>
+  <% end %>
+  <% if trailing_visual? %>
+    <% item.with_trailing_visual do %>
+      <%= trailing_visual %>
+    <% end %>
+  <% end %>
+<% end %>

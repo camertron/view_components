@@ -1,0 +1,43 @@
+<tree-view-sub-tree-item>
+  <%= render(Primer::Alpha::TreeView::Item.new(**@system_arguments, level: @sub_tree.level)) do |item| %>
+    <% if leading_visual? %>
+      <% item.with_leading_visual do %>
+        <%= leading_visual %>
+      <% end %>
+    <% end %>
+    <% if trailing_visual? %>
+      <% item.with_trailing_visual do %>
+        <%= trailing_visual %>
+      <% end %>
+    <% end %>
+
+    <% item.with_toggle do %>
+      <div
+        data-target="tree-view-sub-tree-item.toggleButton"
+        class="TreeViewItemToggle TreeViewItemToggleHover TreeViewItemToggleEnd"
+      >
+        <%= render(
+          Primer::Beta::Octicon.new(
+            icon: :"chevron-down",
+            size: :xsmall,
+            data: { target: "tree-view-sub-tree-item.expandedToggleIcon" },
+            hidden: !@sub_tree.expanded?,
+            style: "pointer-events: none;"
+          )
+        ) %>
+
+        <%= render(
+          Primer::Beta::Octicon.new(
+            icon: :"chevron-right",
+            size: :xsmall,
+            data: { target: "tree-view-sub-tree-item.collapsedToggleIcon" },
+            hidden: @sub_tree.expanded?,
+            style: "pointer-events: none;"
+          )
+        ) %>
+      </div>
+    <% end %>
+
+    <%= render(@sub_tree) %>
+  <% end %>
+</tree-view-sub-tree-item>
