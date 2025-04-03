@@ -1,5 +1,5 @@
 <tree-view-sub-tree-item>
-  <%= render(Primer::Alpha::TreeView::Item.new(**@system_arguments, level: @sub_tree.level)) do |item| %>
+  <%= render(Primer::Alpha::TreeView::Item.new(**@system_arguments, level: @sub_tree.level, path: @sub_tree.path)) do |item| %>
     <% if leading_visual? %>
       <% item.with_leading_visual do %>
         <%= leading_visual %>
@@ -10,6 +10,8 @@
         <%= trailing_visual %>
       <% end %>
     <% end %>
+
+    <% item.with_text_content { @label } %>
 
     <% item.with_toggle do %>
       <div

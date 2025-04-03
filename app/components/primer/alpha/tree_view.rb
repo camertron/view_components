@@ -7,16 +7,26 @@ module Primer
     class TreeView < Primer::Component
       renders_many :items, types: {
         item: {
-          renders: lambda { |component_klass: LeafItem, **system_arguments|
-            component_klass.new(**system_arguments, level: 1)
+          renders: lambda { |component_klass: LeafItem, label:, **system_arguments|
+            component_klass.new(
+              **system_arguments,
+              level: 1,
+              path: [label],
+              label: label
+            )
           },
 
           as: :item
         },
 
         sub_tree: {
-          renders: lambda { |component_klass: SubTreeItem, **system_arguments|
-            component_klass.new(**system_arguments, level: 1)
+          renders: lambda { |component_klass: SubTreeItem, label:, **system_arguments|
+            component_klass.new(
+              **system_arguments,
+              level: 1,
+              path: [label],
+              label: label
+            )
           },
 
           as: :sub_tree

@@ -43,9 +43,10 @@ module Primer
           }
         }
 
-        delegate :with_item, :with_sub_tree, to: :@sub_tree
+        delegate :with_item, :with_sub_tree, :with_loading_spinner, :with_loading_skeleton, to: :@sub_tree
 
-        def initialize(level:, expanded: false, **system_arguments)
+        def initialize(label:, level:, path:, expanded: false, **system_arguments)
+          @label = label
           @system_arguments = system_arguments
 
           @system_arguments[:aria] = merge_aria(
@@ -59,14 +60,11 @@ module Primer
           )
 
           sub_tree_arguments = @system_arguments.delete(:sub_tree_arguments) || {}
-          sub_tree_arguments[:data] = merge_data(
-            sub_tree_arguments,
-            { data: { target: "tree-view-sub-tree-item.subTree" } }
-          )
 
           @sub_tree = SubTree.new(
             expanded: expanded,
             level: level,
+            path: path,
             **sub_tree_arguments
           )
         end

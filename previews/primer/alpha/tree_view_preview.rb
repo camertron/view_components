@@ -6,6 +6,12 @@ module Primer
     class TreeViewPreview < ViewComponent::Preview
       def default
       end
+
+      def loading_spinner
+      end
+
+      def loading_skeleton
+      end
     end
   end
 end

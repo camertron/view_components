@@ -26,7 +26,8 @@ module Primer
           }
         }
 
-        def initialize(**system_arguments)
+        def initialize(label:, **system_arguments)
+          @label = label
           @system_arguments = system_arguments
         end
       end

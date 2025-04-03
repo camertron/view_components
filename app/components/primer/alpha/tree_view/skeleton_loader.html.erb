@@ -1,0 +1,14 @@
+<%= render(Primer::BaseComponent.new(tag: :"tree-view-include-fragment", src: @src, loading: :lazy, data: { target: "tree-view-sub-tree-item.subTree", path: @container.path.to_json }, hidden: @container.expanded?)) do %>
+  <%= render(@container) do %>
+    <%= render(Primer::Alpha::TreeView::Item.new(level: @container.level + 1, path: @container.path)) do |item| %>
+      <% item.with_text_content do %>
+        <% @count.times do %>
+          <span class="TreeViewSkeletonItemContainerStyle TreeViewItemSkeleton">
+            <%= render(Primer::Alpha::SkeletonBox.new(width: "16px")) %>
+            <%= render(Primer::Alpha::SkeletonBox.new(width: "100%", classes: "TreeItemSkeletonTextStyles")) %>
+          </span>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

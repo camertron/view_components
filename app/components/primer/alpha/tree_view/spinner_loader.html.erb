@@ -1,0 +1,10 @@
+<%= render(Primer::BaseComponent.new(tag: :"tree-view-include-fragment", src: @src, loading: :lazy, data: { target: "tree-view-sub-tree-item.subTree", path: @container.path.to_json }, hidden: @container.expanded?)) do %>
+  <%= render(@container) do %>
+    <% render(Primer::Alpha::TreeView::Item.new(level: @container.level + 1, path: @container.path)) do |item| %>
+      <% item.with_text_content { "Loading..." } %>
+      <% item.with_leading_visual do %>
+        <%= render(Primer::Beta::Spinner.new(size: :small, wrapper_arguments: { classes: "TreeViewItemVisual" })) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

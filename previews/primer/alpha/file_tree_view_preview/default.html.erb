@@ -2,7 +2,7 @@
   <%= render(Primer::Alpha::FileTreeView.new) do |tree_view| %>
     <% tree_view.with_directory(label: "src", expanded: true) do |dir| %>
       <% dir.with_file(label: "button.rb") %>
-      <% dir.with_file(label: "icon_button.rb") %>
+      <% dir.with_file(label: "icon_button.rb", current: true) %>
     <% end %>
 
     <% tree_view.with_file(label: "action_list.rb") do |item| %>

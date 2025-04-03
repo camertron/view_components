@@ -8,9 +8,13 @@ module Primer
         renders_one :trailing_visual
 
         renders_one :toggle
+        renders_one :text_content
 
-        def initialize(label:, level:, **system_arguments)
+        def initialize(level:, path:, current: false, **system_arguments)
           @system_arguments = deny_tag_argument(**system_arguments)
+
+          @level = level
+          @path = path
 
           @system_arguments[:tag] = :li
           @system_arguments[:role] = :treeitem
@@ -19,8 +23,15 @@ module Primer
             "TreeViewItem"
           )
 
-          @label = label
-          @level = level
+          @system_arguments[:aria] = merge_aria(
+            @system_arguments,
+            { aria: { current: current } }
+          )
+
+          @system_arguments[:data] = merge_data(
+            @system_arguments,
+            { data: { level: level, path: @path.to_json } }
+          )
         end
       end
     end

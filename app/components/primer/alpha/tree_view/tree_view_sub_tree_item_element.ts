@@ -39,6 +39,16 @@ export class TreeViewSubTreeItemElement extends HTMLElement {
     }
   }
 
+  expand() {
+    this.expanded = true
+    this.#update()
+  }
+
+  collapse() {
+    this.expanded = false
+    this.#update()
+  }
+
   #handleToggleEvent(event: Event) {
     if (event.type === 'click') {
       this.expanded = !this.expanded
@@ -49,7 +59,7 @@ export class TreeViewSubTreeItemElement extends HTMLElement {
   #update() {
     if (this.expanded) {
       this.subTree.hidden = false
-      this.item.setAttribute('data-expanded', 'true')
+      this.item.setAttribute('aria-expanded', 'true')
 
       if (this.iconPair) {
         this.iconPair.showExpanded()
@@ -61,7 +71,7 @@ export class TreeViewSubTreeItemElement extends HTMLElement {
       }
     } else {
       this.subTree.hidden = true
-      this.item.setAttribute('data-expanded', 'false')
+      this.item.setAttribute('aria-expanded', 'false')
 
       if (this.iconPair) {
         this.iconPair.showCollapsed()

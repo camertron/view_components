@@ -4,40 +4,67 @@ module Primer
   module Alpha
     class TreeView
       class SubTree < Primer::Component
-        attr_reader :expanded, :level
-        alias expanded? expanded
-
         renders_many :items, types: {
           item: {
-            renders: lambda { |component_klass: LeafItem, **system_arguments|
-              component_klass.new(**system_arguments, level: level + 1)
+            renders: lambda { |component_klass: LeafItem, label:, **system_arguments|
+              component_klass.new(
+                **system_arguments,
+                level: level + 1,
+                path: [*path, label],
+                label: label
+              )
             },
 
             as: :item
           },
 
           sub_tree: {
-            renders: lambda { |component_klass: SubTreeItem, **system_arguments|
-              component_klass.new(**system_arguments, level: level + 1)
+            renders: lambda { |component_klass: SubTreeItem, label:, **system_arguments|
+              component_klass.new(
+                **system_arguments,
+                level: level + 1,
+                path: [*path, label],
+                label: label
+              )
             },
 
             as: :sub_tree
           }
         }
 
-        def initialize(level:, expanded: false, **system_arguments)
-          @system_arguments = deny_tag_argument(**system_arguments)
-          @level = level
-          @expanded = expanded
+        renders_one :loader, types: {
+          spinner: {
+            renders: lambda { |**system_arguments|
+              SpinnerLoader.new(**system_arguments, level: level, path: path)
+            },
 
-          @system_arguments[:tag] = :ul
-          @system_arguments[:role] = :group
-          @system_arguments[:p] = 0
-          @system_arguments[:m] = 0
-          @system_arguments[:style] = "list-style: none;"
-          @system_arguments[:hidden] = !expanded?
+            as: :loading_spinner
+          },
 
-          # @TODO: aria-label
+          skeleton: {
+            renders: lambda { |**system_arguments|
+              SkeletonLoader.new(**system_arguments, level: level, path: path)
+            },
+
+            as: :loading_skeleton
+          }
+        }
+
+        delegate :level, :path, :expanded?, to: :@container
+
+        def initialize(**system_arguments)
+          system_arguments[:data] = merge_data(
+            system_arguments,
+            { data: { target: "tree-view-sub-tree-item.subTree" } }
+          )
+
+          @container = SubTreeContainer.new(**system_arguments)
+        end
+
+        private
+
+        def defer?
+          loader?
         end
       end
     end
