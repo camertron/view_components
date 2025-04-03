@@ -4,11 +4,11 @@ module Primer
   module Alpha
     class FileTreeView < TreeView
       def with_file(**system_arguments, &block)
-        with_item(**system_arguments, component_klass: FileItem, &block)
+        with_leaf(**system_arguments, component_klass: FileNode, &block)
       end
 
       def with_directory(**system_arguments, &block)
-        with_sub_tree(**system_arguments, component_klass: DirectoryItem, &block)
+        with_sub_tree(**system_arguments, component_klass: DirectoryNode, &block)
       end
     end
   end

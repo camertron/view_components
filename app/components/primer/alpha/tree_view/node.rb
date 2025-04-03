@@ -3,7 +3,7 @@
 module Primer
   module Alpha
     class TreeView
-      class Item < Primer::Component
+      class Node < Primer::Component
         renders_one :leading_visual
         renders_one :trailing_visual
 

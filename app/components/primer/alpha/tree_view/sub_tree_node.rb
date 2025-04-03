@@ -3,7 +3,7 @@
 module Primer
   module Alpha
     class TreeView
-      class SubTreeItem < Primer::Component
+      class SubTreeNode < Primer::Component
         renders_one :leading_visual, types: {
           icon: lambda { |**system_arguments|
             label = system_arguments.delete(:label)
@@ -19,7 +19,7 @@ module Primer
 
             system_arguments[:data] = merge_data(
               system_arguments,
-              { data: { target: "tree-view-sub-tree-item.iconPair" } }
+              { data: { target: "tree-view-sub-tree-node.iconPair" } }
             )
 
             Visual.new(
@@ -43,7 +43,7 @@ module Primer
           }
         }
 
-        delegate :with_item, :with_sub_tree, :with_loading_spinner, :with_loading_skeleton, to: :@sub_tree
+        delegate :with_leaf, :with_sub_tree, :with_loading_spinner, :with_loading_skeleton, to: :@sub_tree
 
         def initialize(label:, level:, path:, expanded: false, **system_arguments)
           @label = label
@@ -55,8 +55,12 @@ module Primer
           )
 
           @system_arguments[:data] = merge_data(
-            @system_arguments,
-            { data: { target: "tree-view-sub-tree-item.item" } }
+            @system_arguments, {
+              data: {
+                target: "tree-view-sub-tree-node.node",
+                "node-type": "sub-tree"
+              }
+            }
           )
 
           sub_tree_arguments = @system_arguments.delete(:sub_tree_arguments) || {}

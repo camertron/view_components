@@ -4,9 +4,9 @@ module Primer
   module Alpha
     class TreeView
       class SubTree < Primer::Component
-        renders_many :items, types: {
-          item: {
-            renders: lambda { |component_klass: LeafItem, label:, **system_arguments|
+        renders_many :nodes, types: {
+          leaf: {
+            renders: lambda { |component_klass: LeafNode, label:, **system_arguments|
               component_klass.new(
                 **system_arguments,
                 level: level + 1,
@@ -15,11 +15,11 @@ module Primer
               )
             },
 
-            as: :item
+            as: :leaf
           },
 
           sub_tree: {
-            renders: lambda { |component_klass: SubTreeItem, label:, **system_arguments|
+            renders: lambda { |component_klass: SubTreeNode, label:, **system_arguments|
               component_klass.new(
                 **system_arguments,
                 level: level + 1,
@@ -55,7 +55,7 @@ module Primer
         def initialize(**system_arguments)
           system_arguments[:data] = merge_data(
             system_arguments,
-            { data: { target: "tree-view-sub-tree-item.subTree" } }
+            { data: { target: "tree-view-sub-tree-node.subTree" } }
           )
 
           @container = SubTreeContainer.new(**system_arguments)

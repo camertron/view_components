@@ -1,6 +1,6 @@
 <div style="max-width: 400px">
   <%= render(Primer::Alpha::FileTreeView.new) do |tree_view| %>
-    <% tree_view.with_directory(label: "src", expanded: true) do |dir| %>
+    <% tree_view.with_directory(label: "src", expanded: true, icon_arguments: { color: :accent }) do |dir| %>
       <% dir.with_file(label: "button.rb") %>
       <% dir.with_file(label: "icon_button.rb", current: true) %>
     <% end %>

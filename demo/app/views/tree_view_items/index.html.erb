@@ -15,7 +15,7 @@
         <% end %>
       <% end %>
     <% when :file %>
-      <% tree.with_item(label: label) do |item| %>
+      <% tree.with_leaf(label: label) do |item| %>
         <% item.with_leading_visual_icon(icon: :file) %>
       <% end %>
     <% end %>

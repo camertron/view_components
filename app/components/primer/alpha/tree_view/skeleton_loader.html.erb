@@ -1,13 +1,22 @@
-<%= render(Primer::BaseComponent.new(tag: :"tree-view-include-fragment", src: @src, loading: :lazy, data: { target: "tree-view-sub-tree-item.subTree", path: @container.path.to_json }, hidden: @container.expanded?)) do %>
+<% unless loading_failure_message? %>
+  <% with_loading_failure_message %>
+<% end %>
+
+<%= render(Primer::BaseComponent.new(tag: :"tree-view-include-fragment", src: @src, loading: :lazy, data: { target: "tree-view-sub-tree-node.subTree tree-view-sub-tree-node.includeFragment", path: @container.path.to_json }, hidden: @container.expanded?)) do %>
   <%= render(@container) do %>
-    <%= render(Primer::Alpha::TreeView::Item.new(level: @container.level + 1, path: @container.path)) do |item| %>
-      <% item.with_text_content do %>
-        <% @count.times do %>
-          <span class="TreeViewSkeletonItemContainerStyle TreeViewItemSkeleton">
-            <%= render(Primer::Alpha::SkeletonBox.new(width: "16px")) %>
-            <%= render(Primer::Alpha::SkeletonBox.new(width: "100%", classes: "TreeItemSkeletonTextStyles")) %>
-          </span>
-        <% end %>
+    <%= render(Primer::Alpha::TreeView::Node.new(level: @container.level + 1, path: @container.path)) do |node| %>
+      <% node.with_text_content do %>
+        <div data-target="tree-view-sub-tree-node.loadingIndicator">
+          <% @count.times do %>
+            <span class="TreeViewSkeletonItemContainerStyle TreeViewItemSkeleton">
+              <%= render(Primer::Alpha::SkeletonBox.new(width: "16px")) %>
+              <%= render(Primer::Alpha::SkeletonBox.new(width: "100%", classes: "TreeItemSkeletonTextStyles")) %>
+            </span>
+          <% end %>
+        </div>
+        <div data-target="tree-view-sub-tree-node.loadingFailureMessage" hidden>
+          <%= loading_failure_message %>
+        </div>
       <% end %>
     <% end %>
   <% end %>

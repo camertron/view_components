@@ -3,7 +3,7 @@
 module Primer
   module Alpha
     class TreeView
-      class LeafItem < Primer::Component
+      class LeafNode < Primer::Component
         renders_one :leading_visual, types: {
           icon: lambda { |**system_arguments|
             label = system_arguments.delete(:label)
@@ -29,6 +29,10 @@ module Primer
         def initialize(label:, **system_arguments)
           @label = label
           @system_arguments = system_arguments
+          @system_arguments[:data] = merge_data(
+            @system_arguments,
+            data: { "node-type": "leaf" }
+          )
         end
       end
     end

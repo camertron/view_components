@@ -10,6 +10,10 @@ class TreeViewItemsController < ApplicationController
     # delay a bit so loading spinners, etc can be seen
     sleep 1
 
+    if params[:fail] == "true"
+      head :internal_server_error and return
+    end
+
     path = JSON.parse(params[:path])
     node = path.inject(TREE) do |current, segment|
       current["children"][segment]

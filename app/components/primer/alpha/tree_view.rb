@@ -6,8 +6,8 @@ module Primer
     # can be toggled into view by expanding or collapsing their parent item.
     class TreeView < Primer::Component
       renders_many :items, types: {
-        item: {
-          renders: lambda { |component_klass: LeafItem, label:, **system_arguments|
+        leaf: {
+          renders: lambda { |component_klass: LeafNode, label:, **system_arguments|
             component_klass.new(
               **system_arguments,
               level: 1,
@@ -16,11 +16,11 @@ module Primer
             )
           },
 
-          as: :item
+          as: :leaf
         },
 
         sub_tree: {
-          renders: lambda { |component_klass: SubTreeItem, label:, **system_arguments|
+          renders: lambda { |component_klass: SubTreeNode, label:, **system_arguments|
             component_klass.new(
               **system_arguments,
               level: 1,

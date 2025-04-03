@@ -66,7 +66,7 @@
       --min-item-height: 2.75rem;
     }
 
-    &:has(.TreeViewItemSkeleton):hover {
+    &:has(.TreeViewFailureMessage):hover {
       cursor: default;
       background-color: transparent;
 
@@ -261,4 +261,12 @@
 
 .TreeItemSkeletonTextStyles {
   width: var(--tree-item-loading-width, 67%);
+}
+
+.TreeViewFailureMessage {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
 }

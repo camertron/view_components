@@ -7,10 +7,18 @@ module Primer
       def default
       end
 
-      def loading_spinner
+      # @label Loading spinner
+      #
+      # @param simulate_failure toggle
+      def loading_spinner(simulate_failure: false)
+        render_with_template(locals: { simulate_failure: simulate_failure })
       end
 
-      def loading_skeleton
+      # @label Loading skeleton
+      #
+      # @param simulate_failure toggle
+      def loading_skeleton(simulate_failure: false)
+        render_with_template(locals: { simulate_failure: simulate_failure })
       end
     end
   end

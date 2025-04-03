@@ -1,28 +1,28 @@
-<tree-view-sub-tree-item>
-  <%= render(Primer::Alpha::TreeView::Item.new(**@system_arguments, level: @sub_tree.level, path: @sub_tree.path)) do |item| %>
+<tree-view-sub-tree-node>
+  <%= render(Primer::Alpha::TreeView::Node.new(**@system_arguments, level: @sub_tree.level, path: @sub_tree.path)) do |node| %>
     <% if leading_visual? %>
-      <% item.with_leading_visual do %>
+      <% node.with_leading_visual do %>
         <%= leading_visual %>
       <% end %>
     <% end %>
     <% if trailing_visual? %>
-      <% item.with_trailing_visual do %>
+      <% node.with_trailing_visual do %>
         <%= trailing_visual %>
       <% end %>
     <% end %>
 
-    <% item.with_text_content { @label } %>
+    <% node.with_text_content { @label } %>
 
-    <% item.with_toggle do %>
+    <% node.with_toggle do %>
       <div
-        data-target="tree-view-sub-tree-item.toggleButton"
+        data-target="tree-view-sub-tree-node.toggleButton"
         class="TreeViewItemToggle TreeViewItemToggleHover TreeViewItemToggleEnd"
       >
         <%= render(
           Primer::Beta::Octicon.new(
             icon: :"chevron-down",
             size: :xsmall,
-            data: { target: "tree-view-sub-tree-item.expandedToggleIcon" },
+            data: { target: "tree-view-sub-tree-node.expandedToggleIcon" },
             hidden: !@sub_tree.expanded?,
             style: "pointer-events: none;"
           )
@@ -32,7 +32,7 @@
           Primer::Beta::Octicon.new(
             icon: :"chevron-right",
             size: :xsmall,
-            data: { target: "tree-view-sub-tree-item.collapsedToggleIcon" },
+            data: { target: "tree-view-sub-tree-node.collapsedToggleIcon" },
             hidden: @sub_tree.expanded?,
             style: "pointer-events: none;"
           )
@@ -42,4 +42,4 @@
 
     <%= render(@sub_tree) %>
   <% end %>
-</tree-view-sub-tree-item>
+</tree-view-sub-tree-node>
