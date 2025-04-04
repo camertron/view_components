@@ -131,7 +131,10 @@ class PrimerComponentTest < Minitest::Test
     [Primer::Alpha::ActionMenu, {}, proc { |component| component.with_item(label: "Do something", value: "") }],
     [Primer::Alpha::SelectPanel, {}],
     [Primer::Alpha::Stack, {}],
-    [Primer::Alpha::StackItem, {}]
+    [Primer::Alpha::StackItem, {}],
+    [Primer::Alpha::SkeletonBox, {}],
+    [Primer::Alpha::TreeView, {}],
+    [Primer::Alpha::FileTreeView, {}]
   ].freeze
 
   def test_registered_components
@@ -158,7 +161,20 @@ class PrimerComponentTest < Minitest::Test
       "Primer::Component",
       "Primer::Content",
       "Primer::Navigation::TabComponent",
-      "Primer::ResponsiveArg"
+      "Primer::ResponsiveArg",
+      "Primer::Alpha::TreeView::IconPair",
+      "Primer::Alpha::TreeView::Icon",
+      "Primer::Alpha::TreeView::LeafNode",
+      "Primer::Alpha::TreeView::LoadingFailureMessage",
+      "Primer::Alpha::TreeView::Node",
+      "Primer::Alpha::TreeView::SkeletonLoader",
+      "Primer::Alpha::TreeView::SpinnerLoader",
+      "Primer::Alpha::TreeView::SubTreeContainer",
+      "Primer::Alpha::TreeView::SubTreeNode",
+      "Primer::Alpha::TreeView::SubTree",
+      "Primer::Alpha::TreeView::Visual",
+      "Primer::Alpha::FileTreeView::FileNode",
+      "Primer::Alpha::FileTreeView::DirectoryNode"
     ]
 
     primer_component_files_count = Dir["app/components/**/*.rb"].count { |p| p.exclude?("/experimental/") }

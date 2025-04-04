@@ -3,6 +3,8 @@ import {TreeViewIconPairElement} from './tree_view_icon_pair_element'
 import {observeMutationsUntilConditionMet} from '../../utils'
 import {TreeViewIncludeFragmentElement} from './tree_view_include_fragment_element'
 
+type LoadingState = 'loading' | 'error' | 'success'
+
 @controller
 export class TreeViewSubTreeNodeElement extends HTMLElement {
   @target node: HTMLElement
@@ -17,10 +19,13 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
   @target retryButton: HTMLButtonElement
 
   expanded: boolean
+  loadingState: LoadingState
+
   #abortController: AbortController
 
   connectedCallback() {
     this.expanded = this.node.getAttribute('aria-expanded') === 'true'
+    this.loadingState = 'success'
 
     observeMutationsUntilConditionMet(
       this,
@@ -37,7 +42,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       this,
       () => Boolean(this.includeFragment),
       () => {
-        this.includeFragment.addEventListener('load', this, {signal})
+        this.includeFragment.addEventListener('loadstart', this, {signal})
         this.includeFragment.addEventListener('error', this, {signal})
       },
     )
@@ -88,22 +93,25 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   #handleIncludeFragmentEvent(event: Event) {
     switch (event.type) {
-      // the request completed successfully
-      case 'load':
+      // the request has started
+      case 'loadstart':
+        this.loadingState = 'loading'
+        this.#update()
         break
 
       // the request failed
       case 'error':
-        this.loadingIndicator.hidden = true
-        this.loadingFailureMessage.hidden = false
+        this.loadingState = 'error'
+        this.#update()
         break
     }
   }
 
   #handleRetryButtonEvent(event: Event) {
     if (event.type === 'click') {
-      this.loadingFailureMessage.hidden = true
-      this.loadingIndicator.hidden = false
+      this.loadingState = 'loading'
+      this.#update()
+
       this.includeFragment.refetch()
     }
   }
@@ -133,6 +141,23 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         this.expandedToggleIcon.setAttribute('hidden', 'hidden')
         this.collapsedToggleIcon.removeAttribute('hidden')
       }
+    }
+
+    switch (this.loadingState) {
+      case 'loading':
+        this.loadingFailureMessage.hidden = true
+        this.loadingIndicator.hidden = false
+        break
+
+      case 'error':
+        this.loadingIndicator.hidden = true
+        this.loadingFailureMessage.hidden = false
+        break
+
+      // success/init case
+      default:
+        this.loadingIndicator.hidden = true
+        this.loadingFailureMessage.hidden = true
     }
   }
 }
