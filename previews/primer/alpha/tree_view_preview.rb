@@ -7,18 +7,29 @@ module Primer
       def default
       end
 
+      def playground
+      end
+
       # @label Loading spinner
       #
       # @param simulate_failure toggle
-      def loading_spinner(simulate_failure: false)
-        render_with_template(locals: { simulate_failure: simulate_failure })
+      # @param simulate_empty toggle
+      def loading_spinner(simulate_failure: false, simulate_empty: false)
+        render_with_template(locals: {
+          simulate_failure: simulate_failure,
+          simulate_empty: simulate_empty
+        })
       end
 
       # @label Loading skeleton
       #
       # @param simulate_failure toggle
-      def loading_skeleton(simulate_failure: false)
-        render_with_template(locals: { simulate_failure: simulate_failure })
+      # @param simulate_empty toggle
+      def loading_skeleton(simulate_failure: false, simulate_empty: false)
+        render_with_template(locals: {
+          simulate_failure: simulate_failure,
+          simulate_empty: simulate_empty
+        })
       end
     end
   end

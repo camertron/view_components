@@ -1,5 +1,5 @@
 <% unless loading_failure_message? %>
-  <% with_loading_failure_message %>
+  <% with_loading_failure_message  # set the default %>
 <% end %>
 
 <%= render(Primer::BaseComponent.new(tag: :"tree-view-include-fragment", src: @src, loading: :lazy, data: { target: "tree-view-sub-tree-node.subTree tree-view-sub-tree-node.includeFragment", path: @container.path.to_json }, hidden: @container.expanded?)) do %>

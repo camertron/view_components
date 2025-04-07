@@ -50,6 +50,8 @@ module Primer
           }
         }
 
+        renders_one :no_items_message
+
         delegate :level, :path, :expanded?, to: :@container
 
         def initialize(**system_arguments)

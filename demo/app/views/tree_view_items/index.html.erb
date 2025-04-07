@@ -1,4 +1,5 @@
 <%= render(Primer::Alpha::TreeView::SubTree.new(level: path.size, path: path, expanded: true)) do |tree| %>
+  <% next if params[:empty] == "true" %>
   <% entries.each do |label, type| %>
     <% case type %>
     <% when :directory %>

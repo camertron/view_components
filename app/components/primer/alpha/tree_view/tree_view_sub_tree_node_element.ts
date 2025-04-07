@@ -44,6 +44,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       () => {
         this.includeFragment.addEventListener('loadstart', this, {signal})
         this.includeFragment.addEventListener('error', this, {signal})
+        this.includeFragment.addEventListener('load', (e: Event) => this.#handleIncludeFragmentEvent(e), {signal})
       },
     )
 
@@ -84,6 +85,14 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
     this.#update()
   }
 
+  get nodes(): NodeListOf<Element> {
+    return this.querySelectorAll(':scope > [role=treeitem]')
+  }
+
+  get isEmpty(): boolean {
+    return this.nodes.length === 0
+  }
+
   #handleToggleEvent(event: Event) {
     if (event.type === 'click') {
       this.expanded = !this.expanded
@@ -104,6 +113,12 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         this.loadingState = 'error'
         this.#update()
         break
+
+      // request succeeded
+      case 'load':
+        this.loadingState = 'success'
+        this.#update()
+        break
     }
   }
 
@@ -118,7 +133,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   #update() {
     if (this.expanded) {
-      this.subTree.hidden = false
+      if (this.subTree) this.subTree.hidden = false
       this.node.setAttribute('aria-expanded', 'true')
 
       if (this.iconPair) {
@@ -130,7 +145,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         this.collapsedToggleIcon.setAttribute('hidden', 'hidden')
       }
     } else {
-      this.subTree.hidden = true
+      if (this.subTree) this.subTree.hidden = true
       this.node.setAttribute('aria-expanded', 'false')
 
       if (this.iconPair) {
@@ -145,19 +160,19 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
     switch (this.loadingState) {
       case 'loading':
-        this.loadingFailureMessage.hidden = true
-        this.loadingIndicator.hidden = false
+        if (this.loadingFailureMessage) this.loadingFailureMessage.hidden = true
+        if (this.loadingIndicator) this.loadingIndicator.hidden = false
         break
 
       case 'error':
-        this.loadingIndicator.hidden = true
-        this.loadingFailureMessage.hidden = false
+        if (this.loadingIndicator) this.loadingIndicator.hidden = true
+        if (this.loadingFailureMessage) this.loadingFailureMessage.hidden = false
         break
 
       // success/init case
       default:
-        this.loadingIndicator.hidden = true
-        this.loadingFailureMessage.hidden = true
+        if (this.loadingIndicator) this.loadingIndicator.hidden = true
+        if (this.loadingFailureMessage) this.loadingFailureMessage.hidden = true
     }
   }
 }

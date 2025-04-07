@@ -6,7 +6,7 @@
         <% icons.with_collapsed_icon(icon: :"file-directory-fill", color: :accent) %>
       <% end %>
 
-      <% sub_tree.with_loading_spinner(src: tree_view_items_path(loader: "spinner", fail: simulate_failure)) do |spinner| %>
+      <% sub_tree.with_loading_spinner(src: tree_view_items_path(loader: "spinner", fail: simulate_failure, empty: simulate_empty)) do |spinner| %>
         <% spinner.with_loading_failure_message(text: "Yikes, that's foobared", retry_button_label: "Give it another go") %>
       <% end %>
     <% end %>
