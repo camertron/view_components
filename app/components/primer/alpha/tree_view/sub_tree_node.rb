@@ -32,6 +32,17 @@ module Primer
           }
         }
 
+        renders_one :leading_action, types: {
+          button: lambda { |**system_arguments|
+            LeadingAction.new(
+              action: Primer::Beta::IconButton.new(
+                scheme: :invisible,
+                **system_arguments
+              )
+            )
+          }
+        }
+
         renders_one :trailing_visual, types: {
           icon: lambda { |**system_arguments|
             label = system_arguments.delete(:label)
@@ -44,6 +55,7 @@ module Primer
         }
 
         delegate :with_leaf, :with_sub_tree, :with_loading_spinner, :with_loading_skeleton, to: :@sub_tree
+        delegate :current?, :merge_system_arguments!, to: :@node
 
         def initialize(label:, path:, expanded: false, **system_arguments)
           @label = label
@@ -70,6 +82,24 @@ module Primer
             path: path,
             **sub_tree_arguments
           )
+
+          @node = Primer::Alpha::TreeView::Node.new(**@system_arguments, path: @sub_tree.path)
+        end
+
+        def supports_children?
+          true
+        end
+
+        def each_child(&block)
+          return to_enum(__method__) unless block
+
+          @sub_tree.nodes.each do |node|
+            yield node
+
+            if node.supports_children?
+              node.each_child(&block)
+            end
+          end
         end
       end
     end

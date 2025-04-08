@@ -1,19 +1,6 @@
 import {controller} from '@github/catalyst'
 import {TreeViewSubTreeNodeElement} from './tree_view_sub_tree_node_element'
 
-export type TreeViewNodeActivatedEvent = {
-  node: Element
-  type: string // 'leaf' or 'sub-tree'
-  path: string[]
-}
-
-declare global {
-  interface HTMLElementEventMap {
-    treeViewNodeActivated: CustomEvent<TreeViewNodeActivatedEvent>
-    treeViewBeforeNodeActivated: CustomEvent<TreeViewNodeActivatedEvent>
-  }
-}
-
 @controller
 export class TreeViewElement extends HTMLElement {
   #abortController: AbortController

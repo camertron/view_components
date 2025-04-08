@@ -2,6 +2,7 @@ import {controller, target} from '@github/catalyst'
 import {TreeViewIconPairElement} from './tree_view_icon_pair_element'
 import {observeMutationsUntilConditionMet} from '../../utils'
 import {TreeViewIncludeFragmentElement} from './tree_view_include_fragment_element'
+import {TreeViewElement} from './tree_view'
 
 type LoadingState = 'loading' | 'error' | 'success'
 
@@ -76,18 +77,55 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
   }
 
   expand() {
+    const alreadyExpanded = this.expanded
+
     this.expanded = true
     this.#update()
+
+    if (!alreadyExpanded && this.treeView) {
+      const path = this.treeView.getNodePath(this.node) || []
+
+      this.treeView.dispatchEvent(
+        new CustomEvent('treeViewNodeExpanded', {
+          bubbles: true,
+          detail: {
+            node: this,
+            type: 'sub-tree',
+            path,
+          },
+        }),
+      )
+    }
   }
 
   collapse() {
+    const alreadyCollapsed = !this.expanded
+
     this.expanded = false
     this.#update()
+
+    if (!alreadyCollapsed && this.treeView) {
+      const path = this.treeView.getNodePath(this.node) || []
+
+      this.treeView.dispatchEvent(
+        new CustomEvent('treeViewNodeCollapsed', {
+          bubbles: true,
+          detail: {
+            node: this,
+            type: 'sub-tree',
+            path,
+          },
+        }),
+      )
+    }
   }
 
   toggle() {
-    this.expanded = !this.expanded
-    this.#update()
+    if (this.expanded) {
+      this.collapse()
+    } else {
+      this.expand()
+    }
   }
 
   get nodes(): NodeListOf<Element> {
@@ -96,6 +134,10 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   get isEmpty(): boolean {
     return this.nodes.length === 0
+  }
+
+  get treeView(): TreeViewElement | null {
+    return this.closest('tree-view')
   }
 
   #handleToggleEvent(event: Event) {

@@ -1,4 +1,9 @@
-<%= render(Primer::Alpha::TreeView::Node.new(**@system_arguments)) do |node| %>
+<%= render(@node) do |node| %>
+  <% if leading_action? %>
+    <% node.with_leading_action do %>
+      <%= leading_action %>
+    <% end %>
+  <% end %>
   <% if leading_visual? %>
     <% node.with_leading_visual do %>
       <%= leading_visual %>

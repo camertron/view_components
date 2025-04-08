@@ -1,7 +1,7 @@
 <tree-view>
   <%= render(Primer::BaseComponent.new(**@system_arguments)) do %>
-    <% items.each do |item| %>
-      <%= item %>
+    <% nodes.each do |node| %>
+      <%= node %>
     <% end %>
   <% end %>
 </tree-view>

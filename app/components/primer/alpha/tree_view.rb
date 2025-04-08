@@ -139,7 +139,7 @@ module Primer
     # TreeView is a hierarchical list of items that may have a parent-child relationship where children
     # can be toggled into view by expanding or collapsing their parent item.
     class TreeView < Primer::Component
-      renders_many :items, types: {
+      renders_many :nodes, types: {
         leaf: {
           renders: lambda { |component_klass: LeafNode, label:, **system_arguments|
             component_klass.new(
@@ -174,6 +174,29 @@ module Primer
           @system_arguments.delete(:classes),
           "TreeViewRootUlStyles"
         )
+      end
+
+      def each_child(&block)
+        return to_enum(__method__) unless block
+
+        nodes.each do |node|
+          yield node
+
+          if node.supports_children?
+            node.each_child(&block)
+          end
+        end
+      end
+
+      private
+
+      def before_render
+        return if each_child.any? { |child| child.current? }
+
+        first_node = nodes.first
+        return unless first_node
+
+        first_node.merge_system_arguments!(tabindex: 0)
       end
     end
   end

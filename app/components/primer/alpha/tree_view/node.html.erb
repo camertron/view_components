@@ -1,16 +1,17 @@
 <%= render(Primer::BaseComponent.new(**@system_arguments)) do %>
   <div class="TreeViewItemContainer" style="--level: <%= level %>;">
-    <% if level > 1 %>
-      <div style="grid-area: spacer; display: flex;">
-        <div style="width: 100%; display: flex;">
-          <% (0...(level - 1)).each do %>
-            <div class="TreeViewItemLevelLine"></div>
-          <% end %>
-        </div>
+    <div style="grid-area: spacer; display: flex;">
+      <div style="width: 100%; display: flex;">
+        <% (0...(level - 1)).each do %>
+          <div class="TreeViewItemLevelLine"></div>
+        <% end %>
       </div>
-    <% end %>
+    </div>
     <% if toggle? %>
       <%= toggle %>
+    <% end %>
+    <% if leading_action? %>
+      <%= leading_action %>
     <% end %>
     <div id=":r2a:" class="TreeViewItemContent">
       <% if leading_visual? %>
