@@ -7,7 +7,7 @@
 
   <%= render(@container) do %>
     <% if nodes.empty? %>
-      <%= render(Primer::Alpha::TreeView::Node.new(level: level + 1, path: path, data: { "no-items": true })) do |node| %>
+      <%= render(Primer::Alpha::TreeView::Node.new(path: path, data: { "no-items": true })) do |node| %>
         <% node.with_text_content do %>
           <%= no_items_message %>
         <% end %>

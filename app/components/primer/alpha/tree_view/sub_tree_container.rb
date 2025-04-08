@@ -4,13 +4,12 @@ module Primer
   module Alpha
     class TreeView
       class SubTreeContainer < Primer::Component
-        attr_reader :level, :path, :expanded
+        attr_reader :path, :expanded
 
         alias expanded? expanded
 
-        def initialize(level:, path:, expanded: false, **system_arguments)
+        def initialize(path:, expanded: false, **system_arguments)
           @system_arguments = deny_tag_argument(**system_arguments)
-          @level = level
           @path = path
           @expanded = expanded
 
@@ -22,6 +21,10 @@ module Primer
           @system_arguments[:hidden] = !expanded?
 
           # @TODO: aria-label
+        end
+
+        def level
+          @level ||= @path.size
         end
       end
     end

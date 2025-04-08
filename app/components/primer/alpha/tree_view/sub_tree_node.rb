@@ -45,7 +45,7 @@ module Primer
 
         delegate :with_leaf, :with_sub_tree, :with_loading_spinner, :with_loading_skeleton, to: :@sub_tree
 
-        def initialize(label:, level:, path:, expanded: false, **system_arguments)
+        def initialize(label:, path:, expanded: false, **system_arguments)
           @label = label
           @system_arguments = system_arguments
 
@@ -67,7 +67,6 @@ module Primer
 
           @sub_tree = SubTree.new(
             expanded: expanded,
-            level: level,
             path: path,
             **sub_tree_arguments
           )

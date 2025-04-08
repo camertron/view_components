@@ -85,6 +85,11 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
     this.#update()
   }
 
+  toggle() {
+    this.expanded = !this.expanded
+    this.#update()
+  }
+
   get nodes(): NodeListOf<Element> {
     return this.querySelectorAll(':scope > [role=treeitem]')
   }
@@ -95,8 +100,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   #handleToggleEvent(event: Event) {
     if (event.type === 'click') {
-      this.expanded = !this.expanded
-      this.#update()
+      this.toggle()
     }
   }
 

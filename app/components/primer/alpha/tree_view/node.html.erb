@@ -1,9 +1,9 @@
 <%= render(Primer::BaseComponent.new(**@system_arguments)) do %>
-  <div class="TreeViewItemContainer" style="--level: <%= @level %>;">
-    <% if @level > 1 %>
+  <div class="TreeViewItemContainer" style="--level: <%= level %>;">
+    <% if level > 1 %>
       <div style="grid-area: spacer; display: flex;">
         <div style="width: 100%; display: flex;">
-          <% (0...(@level - 1)).each do %>
+          <% (0...(level - 1)).each do %>
             <div class="TreeViewItemLevelLine"></div>
           <% end %>
         </div>

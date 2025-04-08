@@ -9,7 +9,6 @@ module Primer
             renders: lambda { |component_klass: LeafNode, label:, **system_arguments|
               component_klass.new(
                 **system_arguments,
-                level: level + 1,
                 path: [*path, label],
                 label: label
               )
@@ -22,7 +21,6 @@ module Primer
             renders: lambda { |component_klass: SubTreeNode, label:, **system_arguments|
               component_klass.new(
                 **system_arguments,
-                level: level + 1,
                 path: [*path, label],
                 label: label
               )
@@ -35,7 +33,7 @@ module Primer
         renders_one :loader, types: {
           spinner: {
             renders: lambda { |**system_arguments|
-              SpinnerLoader.new(**system_arguments, level: level, path: path)
+              SpinnerLoader.new(**system_arguments, path: path)
             },
 
             as: :loading_spinner
@@ -43,7 +41,7 @@ module Primer
 
           skeleton: {
             renders: lambda { |**system_arguments|
-              SkeletonLoader.new(**system_arguments, level: level, path: path)
+              SkeletonLoader.new(**system_arguments, path: path)
             },
 
             as: :loading_skeleton
@@ -52,7 +50,7 @@ module Primer
 
         renders_one :no_items_message
 
-        delegate :level, :path, :expanded?, to: :@container
+        delegate :path, :expanded?, to: :@container
 
         def initialize(**system_arguments)
           system_arguments[:data] = merge_data(

@@ -10,10 +10,9 @@ module Primer
         renders_one :toggle
         renders_one :text_content
 
-        def initialize(level:, path:, current: false, **system_arguments)
+        def initialize(path:, current: false, **system_arguments)
           @system_arguments = deny_tag_argument(**system_arguments)
 
-          @level = level
           @path = path
 
           @system_arguments[:tag] = :li
@@ -32,6 +31,10 @@ module Primer
             @system_arguments,
             { data: { level: level, path: @path.to_json } }
           )
+        end
+
+        def level
+          @level ||= @path.size
         end
       end
     end

@@ -144,7 +144,6 @@ module Primer
           renders: lambda { |component_klass: LeafNode, label:, **system_arguments|
             component_klass.new(
               **system_arguments,
-              level: 1,
               path: [label],
               label: label
             )
@@ -157,7 +156,6 @@ module Primer
           renders: lambda { |component_klass: SubTreeNode, label:, **system_arguments|
             component_klass.new(
               **system_arguments,
-              level: 1,
               path: [label],
               label: label
             )
