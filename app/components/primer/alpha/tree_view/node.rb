@@ -30,12 +30,19 @@ module Primer
 
           @system_arguments[:aria] = merge_aria(
             @system_arguments,
-            { aria: { current: current } }
+            { aria: { level: level } }
           )
 
           @system_arguments[:data] = merge_data(
             @system_arguments,
-            { data: { level: level, path: @path.to_json } }
+            { data: { path: @path.to_json } }
+          )
+
+          return unless current?
+
+          @system_arguments[:aria] = merge_aria(
+            @system_arguments,
+            { aria: { current: true } }
           )
         end
 

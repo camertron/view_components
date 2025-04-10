@@ -180,6 +180,10 @@ module Primer
         return to_enum(__method__) unless block
 
         nodes.each do |node|
+          # Render node so all slots are filled. ViewComponent memoizes the return value, so
+          # the result won't be recomputed in the ERB template.
+          node.to_s
+
           yield node
 
           if node.supports_children?

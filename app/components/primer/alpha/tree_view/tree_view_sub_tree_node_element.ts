@@ -23,6 +23,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
   loadingState: LoadingState
 
   #abortController: AbortController
+  #activeElementIsLoader: boolean = false
 
   connectedCallback() {
     this.expanded = this.node.getAttribute('aria-expanded') === 'true'
@@ -38,6 +39,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
     const {signal} = (this.#abortController = new AbortController())
     this.addEventListener('click', this, {signal})
+    this.addEventListener('keydown', this, {signal})
 
     observeMutationsUntilConditionMet(
       this,
@@ -45,7 +47,14 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       () => {
         this.includeFragment.addEventListener('loadstart', this, {signal})
         this.includeFragment.addEventListener('error', this, {signal})
-        this.includeFragment.addEventListener('load', (e: Event) => this.#handleIncludeFragmentEvent(e), {signal})
+        this.includeFragment.addEventListener('include-fragment-replace', this, {signal})
+        this.includeFragment.addEventListener(
+          'include-fragment-replaced',
+          (e: Event) => {
+            this.#handleIncludeFragmentEvent(e)
+          },
+          {signal},
+        )
       },
     )
 
@@ -73,6 +82,8 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       this.#handleToggleEvent(event)
     } else if (event.target === this.includeFragment) {
       this.#handleIncludeFragmentEvent(event)
+    } else if (event instanceof KeyboardEvent) {
+      this.#handleKeyboardEvent(event)
     }
   }
 
@@ -160,10 +171,27 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         this.#update()
         break
 
-      // request succeeded
-      case 'load':
+      // request succeeded but element has not yet been replaced
+      case 'include-fragment-replace':
         this.loadingState = 'success'
+        this.#activeElementIsLoader = document.activeElement === this.loadingIndicator
         this.#update()
+        break
+
+      case 'include-fragment-replaced':
+        if (this.#activeElementIsLoader) {
+          const firstItem = this.querySelector('[role=treeitem] [role=group] > :first-child') as HTMLElement | null
+          if (!firstItem) return
+
+          if (firstItem.tagName.toLowerCase() === 'tree-view-sub-tree-node') {
+            const firstChild = firstItem.querySelector('[role=treeitem]') as HTMLElement | null
+            firstChild?.focus()
+          } else {
+            firstItem?.focus()
+          }
+        }
+
+        this.#activeElementIsLoader = false
         break
     }
   }
@@ -174,6 +202,33 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       this.#update()
 
       this.includeFragment.refetch()
+    }
+  }
+
+  #handleKeyboardEvent(event: KeyboardEvent) {
+    const node = (event.target as HTMLElement).closest('[role=treeitem]')
+    if (!node || node.getAttribute('data-node-type') !== 'sub-tree') {
+      return
+    }
+
+    switch (event.key) {
+      case 'Enter':
+        // eslint-disable-next-line no-restricted-syntax
+        event.stopPropagation()
+        this.toggle()
+        break
+
+      case 'ArrowRight':
+        // eslint-disable-next-line no-restricted-syntax
+        event.stopPropagation()
+        this.expand()
+        break
+
+      case 'ArrowLeft':
+        // eslint-disable-next-line no-restricted-syntax
+        event.stopPropagation()
+        this.collapse()
+        break
     }
   }
 

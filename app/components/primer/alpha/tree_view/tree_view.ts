@@ -1,5 +1,6 @@
 import {controller} from '@github/catalyst'
 import {TreeViewSubTreeNodeElement} from './tree_view_sub_tree_node_element'
+import {useRovingTabIndex} from './tree_view_roving_tab_index'
 
 @controller
 export class TreeViewElement extends HTMLElement {
@@ -8,6 +9,8 @@ export class TreeViewElement extends HTMLElement {
   connectedCallback() {
     const {signal} = (this.#abortController = new AbortController())
     this.addEventListener('click', this, {signal})
+
+    useRovingTabIndex(this)
   }
 
   disconnectedCallback() {
@@ -15,14 +18,18 @@ export class TreeViewElement extends HTMLElement {
   }
 
   handleEvent(event: Event) {
-    const node = this.#nodeForActivation(event)
+    const node = this.#nodeForEvent(event)
 
     if (node) {
-      this.#handleNodeActivated(node)
+      this.#handleNodeEvent(node, event)
     }
   }
 
-  #nodeForActivation(event: Event): Element | null {
+  #eventIsActivation(event: Event): boolean {
+    return event.type === 'click'
+  }
+
+  #nodeForEvent(event: Event): Element | null {
     if (event.type !== 'click') return null
 
     const target = event.target as Element
@@ -33,6 +40,12 @@ export class TreeViewElement extends HTMLElement {
     if (target.closest('.TreeViewItemLeadingAction')) return null
 
     return node
+  }
+
+  #handleNodeEvent(node: Element, event: Event) {
+    if (this.#eventIsActivation(event)) {
+      this.#handleNodeActivated(node)
+    }
   }
 
   #handleNodeActivated(node: Element) {
