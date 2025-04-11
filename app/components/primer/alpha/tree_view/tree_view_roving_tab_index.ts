@@ -31,7 +31,9 @@ export function useRovingTabIndex(containerEl: TreeViewElement) {
       //   return undefined
       // }
 
-      const currentItem = containerEl.querySelector('[aria-current]')
+      let currentItem = containerEl.querySelector('[aria-current]')
+      currentItem = currentItem?.checkVisibility() ? currentItem : null
+
       const firstItem = containerEl.querySelector('[role="treeitem"]')
 
       // Focus the aria-current item if it exists

@@ -176,31 +176,12 @@ module Primer
         )
       end
 
-      def each_child(&block)
-        return to_enum(__method__) unless block
-
-        nodes.each do |node|
-          # Render node so all slots are filled. ViewComponent memoizes the return value, so
-          # the result won't be recomputed in the ERB template.
-          node.to_s
-
-          yield node
-
-          if node.supports_children?
-            node.each_child(&block)
-          end
-        end
-      end
-
       private
 
       def before_render
-        return if each_child.any? { |child| child.current? }
-
-        first_node = nodes.first
-        return unless first_node
-
-        first_node.merge_system_arguments!(tabindex: 0)
+        if (first_node = nodes.first)
+          first_node.merge_system_arguments!(tabindex: 0)
+        end
       end
     end
   end

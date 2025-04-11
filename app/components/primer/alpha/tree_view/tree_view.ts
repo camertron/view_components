@@ -9,6 +9,7 @@ export class TreeViewElement extends HTMLElement {
   connectedCallback() {
     const {signal} = (this.#abortController = new AbortController())
     this.addEventListener('click', this, {signal})
+    this.addEventListener('focusin', this, {signal})
 
     useRovingTabIndex(this)
   }
@@ -30,7 +31,7 @@ export class TreeViewElement extends HTMLElement {
   }
 
   #nodeForEvent(event: Event): Element | null {
-    if (event.type !== 'click') return null
+    if (event.type !== 'click' && event.type !== 'focusin') return null
 
     const target = event.target as Element
     const node = target.closest('[role=treeitem]')
@@ -45,6 +46,8 @@ export class TreeViewElement extends HTMLElement {
   #handleNodeEvent(node: Element, event: Event) {
     if (this.#eventIsActivation(event)) {
       this.#handleNodeActivated(node)
+    } else if (event.type === 'focusin') {
+      this.#handleNodeFocused(node)
     }
   }
 
@@ -78,6 +81,12 @@ export class TreeViewElement extends HTMLElement {
         },
       }),
     )
+  }
+
+  #handleNodeFocused(node: Element) {
+    const previousNode = this.querySelector('[aria-selected=true]')
+    previousNode?.setAttribute('aria-selected', 'false')
+    node.setAttribute('aria-selected', 'true')
   }
 
   getNodePath(node: Element): string[] {

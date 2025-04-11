@@ -116,6 +116,12 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
     this.#update()
 
     if (!alreadyCollapsed && this.treeView) {
+      // Prevent issue where currently focusable node is stuck inside a collapsed
+      // sub-tree and no node in the entire tree can be focused
+      const previousNode = this.subTree.querySelector("[tabindex='0']")
+      previousNode?.setAttribute('tabindex', '-1')
+      this.node.setAttribute('tabindex', '0')
+
       const path = this.treeView.getNodePath(this.node) || []
 
       this.treeView.dispatchEvent(
@@ -174,7 +180,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
       // request succeeded but element has not yet been replaced
       case 'include-fragment-replace':
         this.loadingState = 'success'
-        this.#activeElementIsLoader = document.activeElement === this.loadingIndicator
+        this.#activeElementIsLoader = document.activeElement === this.loadingIndicator.closest('li')
         this.#update()
         break
 

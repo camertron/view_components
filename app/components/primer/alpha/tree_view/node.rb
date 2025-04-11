@@ -30,7 +30,7 @@ module Primer
 
           @system_arguments[:aria] = merge_aria(
             @system_arguments,
-            { aria: { level: level } }
+            { aria: { level: level, selected: "false" } }
           )
 
           @system_arguments[:data] = merge_data(

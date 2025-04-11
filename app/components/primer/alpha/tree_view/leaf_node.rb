@@ -45,10 +45,6 @@ module Primer
 
           @node = Primer::Alpha::TreeView::Node.new(**@system_arguments)
         end
-
-        def supports_children?
-          false
-        end
       end
     end
   end

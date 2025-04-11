@@ -85,26 +85,6 @@ module Primer
 
           @node = Primer::Alpha::TreeView::Node.new(**@system_arguments, path: @sub_tree.path)
         end
-
-        def supports_children?
-          true
-        end
-
-        def each_child(&block)
-          return to_enum(__method__) unless block
-
-          @sub_tree.nodes.each do |node|
-            # Render node so all slots are filled. ViewComponent memoizes the return value, so
-            # the result won't be recomputed in the ERB template.
-            node.to_s
-
-            yield node
-
-            if node.supports_children?
-              node.each_child(&block)
-            end
-          end
-        end
       end
     end
   end
