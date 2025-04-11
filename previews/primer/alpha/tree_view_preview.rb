@@ -14,14 +14,18 @@ module Primer
       def playground
       end
 
+      # @label Empty
+      def empty
+      end
+
       # @label Loading spinner
       #
       # @param simulate_failure [Boolean] toggle
       # @param simulate_empty [Boolean] toggle
       def loading_spinner(simulate_failure: false, simulate_empty: false)
         render_with_template(locals: {
-          simulate_failure: simulate_failure,
-          simulate_empty: simulate_empty
+          simulate_failure: coerce_bool(simulate_failure),
+          simulate_empty: coerce_bool(simulate_empty)
         })
       end
 
@@ -31,8 +35,8 @@ module Primer
       # @param simulate_empty [Boolean] toggle
       def loading_skeleton(simulate_failure: false, simulate_empty: false)
         render_with_template(locals: {
-          simulate_failure: simulate_failure,
-          simulate_empty: simulate_empty
+          simulate_failure: coerce_bool(simulate_failure),
+          simulate_empty: coerce_bool(simulate_empty)
         })
       end
 

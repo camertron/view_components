@@ -5,6 +5,7 @@ require "system/test_case"
 module Alpha
   class IntegrationTreeViewTest < System::TestCase
     include Primer::KeyboardTestHelpers
+    include Primer::JsTestHelpers
 
     ##### TEST HELPERS #####
 
@@ -45,6 +46,10 @@ module Alpha
       assert_selector selector_for(*path)
     end
 
+    def refute_path(*path)
+      refute_selector selector_for(*path)
+    end
+
     def assert_path_tabbable(*path)
       assert_selector "#{selector_for(*path)}[tabindex='0']"
     end
@@ -53,11 +58,26 @@ module Alpha
       assert_selector "#{selector_for(*path)}[aria-selected=true]"
     end
 
+    def remove_fail_param_from_fragment_src_for(*path)
+      evaluate_multiline_script(<<~JS)
+        const selector = CSS.escape(JSON.stringify(#{path.inspect}))
+        const includeFragment = document.querySelector(`[data-path="${selector}"] tree-view-include-fragment`)
+        const relativeUrl = includeFragment.getAttribute('src')
+        const url = new URL(relativeUrl, 'http://dummy')
+        url.searchParams.delete('fail')
+        const newUrl = `${url.pathname}?${url.searchParams.toString()}`
+        includeFragment.setAttribute('src', newUrl)
+      JS
+    end
+
     ##### TESTS #####
 
     def test_expands
       visit_preview(:default)
       activate_at_path("src")
+
+      assert_path "src", "button.rb"
+      assert_path "src", "icon_button.rb"
 
       node_at_path("src").tap do |node|
         assert_equal "true", node["aria-expanded"]
@@ -74,6 +94,9 @@ module Alpha
 
       # should collapse
       activate_at_path("src")
+
+      refute_path "src", "button.rb"
+      refute_path "src", "icon_button.rb"
 
       node_at_path("src").tap do |node|
         assert_equal "false", node["aria-expanded"]
@@ -158,7 +181,12 @@ module Alpha
 
       activate_at_path("primer")
 
+      # assert loader appears and is subsequently replaced
       assert_selector "#{selector_for("primer", "loader")} svg"
+      assert_selector "#{selector_for("primer", "alpha")}"
+
+      # assert loader is gone
+      refute_selector "#{selector_for("primer", "loader")}"
     end
 
     def test_selecting_spinner_causes_selection_to_move_to_first_loaded_node
@@ -171,12 +199,46 @@ module Alpha
       assert_path_selected("primer", "alpha")
     end
 
+    def test_loading_spinner_failure
+      visit_preview(:loading_spinner, simulate_failure: true)
+
+      activate_at_path("primer")
+
+      assert_selector "#{selector_for("primer")} .TreeViewFailureMessage", text: "Something went wrong"
+    end
+
+    def test_loading_spinner_retry_after_failure
+      visit_preview(:loading_spinner, simulate_failure: true)
+
+      activate_at_path("primer")
+      assert_selector "#{selector_for("primer")} .TreeViewFailureMessage"
+
+      remove_fail_param_from_fragment_src_for("primer")
+      click_on("Retry")
+
+      assert_path("primer", "alpha")
+      refute_selector "#{selector_for("primer")} .TreeViewFailureMessage"
+    end
+
+    def test_empty_after_loading_spinner
+      visit_preview(:loading_spinner, simulate_empty: true)
+
+      activate_at_path("primer")
+
+      assert_selector "#{selector_for("primer")} .TreeViewItemContentText", text: "No items"
+    end
+
     def test_loading_skeleton
       visit_preview(:loading_skeleton)
 
       activate_at_path("primer")
 
+      # assert loader appears and is subsequently replaced
       assert_selector "#{selector_for("primer", "loader")} .SkeletonBox"
+      assert_selector "#{selector_for("primer", "alpha")}"
+
+      # assert loader is gone
+      refute_selector "#{selector_for("primer", "loader")}"
     end
 
     def test_selecting_skeleton_causes_selection_to_move_to_first_loaded_node
@@ -187,6 +249,43 @@ module Alpha
       keyboard.type(:down)
 
       assert_path_selected("primer", "alpha")
+    end
+
+    def test_loading_skeleton_failure
+      visit_preview(:loading_skeleton, simulate_failure: true)
+
+      activate_at_path("primer")
+
+      assert_selector "#{selector_for("primer")} .TreeViewFailureMessage", text: "Something went wrong"
+    end
+
+    def test_loading_skeleton_retry_after_failure
+      visit_preview(:loading_skeleton, simulate_failure: true)
+
+      activate_at_path("primer")
+      assert_selector "#{selector_for("primer")} .TreeViewFailureMessage"
+
+      remove_fail_param_from_fragment_src_for("primer")
+      click_on("Retry")
+
+      assert_path("primer", "alpha")
+      refute_selector "#{selector_for("primer")} .TreeViewFailureMessage"
+    end
+
+    def test_empty_after_loading_skeleton
+      visit_preview(:loading_skeleton, simulate_empty: true)
+
+      activate_at_path("primer")
+
+      assert_selector "#{selector_for("primer")} .TreeViewItemContentText", text: "No items"
+    end
+
+    def test_empty
+      visit_preview(:empty)
+
+      activate_at_path("src")
+
+      assert_selector "#{selector_for("src")} .TreeViewItemContentText", text: "No items"
     end
   end
 end
