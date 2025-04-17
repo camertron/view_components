@@ -71,6 +71,43 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         )
       },
     )
+
+    const checkedMutationObserver = new MutationObserver(() => {
+      let checkType = 'unknown'
+
+      if (this.loadingIndicator) {
+        checkType = 'false'
+      } else {
+        for (const node of this.eachDirectDescendantNode()) {
+          switch (`${checkType} ${node.getAttribute('aria-checked') || 'false'}`) {
+            case 'unknown mixed':
+            case 'false mixed':
+            case 'true mixed':
+            case 'false true':
+            case 'true false':
+              checkType = 'mixed'
+              break
+
+            case 'unknown false':
+              checkType = 'false'
+              break
+
+            case 'unknown true':
+              checkType = 'true'
+          }
+        }
+      }
+
+      if (this.node?.getAttribute('aria-checked') !== checkType) {
+        this.node?.setAttribute('aria-checked', checkType)
+      }
+    })
+
+    checkedMutationObserver.observe(this, {
+      childList: true,
+      subtree: true,
+      attributeFilter: ['aria-checked'],
+    })
   }
 
   disconnectedCallback() {
@@ -78,7 +115,11 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
   }
 
   handleEvent(event: Event) {
-    if (event.target === this.toggleButton) {
+    const checkbox = (event.target as Element).closest('.TreeViewItemCheckbox')
+
+    if (checkbox && checkbox === this.#checkboxElement) {
+      this.#handleCheckboxEvent(event)
+    } else if (event.target === this.toggleButton) {
       this.#handleToggleEvent(event)
     } else if (event.target === this.includeFragment) {
       this.#handleIncludeFragmentEvent(event)
@@ -149,6 +190,22 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
     return this.querySelectorAll(':scope > [role=treeitem]')
   }
 
+  *eachDirectDescendantNode(): Generator<Element> {
+    for (const leaf of this.subTree.querySelectorAll(':scope > [role=treeitem]')) {
+      yield leaf
+    }
+
+    for (const subTree of this.subTree.querySelectorAll(':scope > tree-view-sub-tree-node > [role=treeitem]')) {
+      yield subTree
+    }
+  }
+
+  *eachDescendantNode(): Generator<Element> {
+    for (const node of this.subTree.querySelectorAll('[role=treeitem]')) {
+      yield node
+    }
+  }
+
   get isEmpty(): boolean {
     return this.nodes.length === 0
   }
@@ -213,7 +270,7 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   #handleKeyboardEvent(event: KeyboardEvent) {
     const node = (event.target as HTMLElement).closest('[role=treeitem]')
-    if (!node || node.getAttribute('data-node-type') !== 'sub-tree') {
+    if (!node || this.treeView?.getNodeType(node) !== 'sub-tree') {
       return
     }
 
@@ -234,6 +291,46 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         // eslint-disable-next-line no-restricted-syntax
         event.stopPropagation()
         this.collapse()
+        break
+
+      case ' ':
+        // eslint-disable-next-line no-restricted-syntax
+        event.stopPropagation()
+        event.preventDefault()
+        this.toggleChecked()
+        break
+    }
+  }
+
+  #handleCheckboxEvent(event: Event) {
+    if (event.type !== 'click') return
+
+    this.toggleChecked()
+
+    // prevent receiving this event twice
+    // eslint-disable-next-line no-restricted-syntax
+    event.stopPropagation()
+  }
+
+  toggleChecked() {
+    const checkValue = this.node.getAttribute('aria-checked') || 'false'
+
+    switch (checkValue) {
+      case 'false':
+        // check all sub nodes, including leaves and trees
+        for (const node of this.eachDescendantNode()) {
+          node.setAttribute('aria-checked', 'true')
+        }
+
+        break
+
+      case 'true':
+      case 'mixed':
+        // uncheck all sub nodes, including leaves and trees
+        for (const node of this.eachDescendantNode()) {
+          node.setAttribute('aria-checked', 'false')
+        }
+
         break
     }
   }
@@ -281,6 +378,10 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
         if (this.loadingIndicator) this.loadingIndicator.hidden = true
         if (this.loadingFailureMessage) this.loadingFailureMessage.hidden = true
     }
+  }
+
+  get #checkboxElement(): HTMLElement | null {
+    return this.querySelector('.TreeViewItemCheckbox')
   }
 }
 

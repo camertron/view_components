@@ -14,6 +14,11 @@
       <%= leading_action %>
     <% end %>
     <div id=":r2a:" class="TreeViewItemContent">
+      <% if @select_variant == :multiple %>
+        <button class="TreeViewItemCheckbox">
+          <div class="FormControl-checkbox"></div>
+        </button>
+      <% end %>
       <% if leading_visual? %>
         <%= leading_visual %>
       <% end %>

@@ -30,7 +30,12 @@ class TreeViewItemsController < ApplicationController
       format.any(:html, :html_fragment) do
         render(
           "tree_view_items/index",
-          locals: { entries: entries, path: path, loader: (params[:loader] || :spinner).to_sym },
+          locals: {
+            entries: entries,
+            path: path,
+            loader: (params[:loader] || :spinner).to_sym,
+            select_variant: (params[:select_variant] || :none).to_sym
+          },
           layout: false,
           formats: [:html, :html_fragment]
         )

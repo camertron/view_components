@@ -42,6 +42,15 @@ module Primer
           end
         end
       end
+
+      def test_trailing_visual_icon
+        render_preview(:default)
+
+        assert_selector("li[role=treeitem][data-path=\"[\\\"src\\\"]\"]") do |node|
+          # this should be visually positioned after the node's label
+          node.assert_selector(":nth-child(4) svg.octicon-diff-modified")
+        end
+      end
     end
   end
 end

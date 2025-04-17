@@ -10,6 +10,7 @@ export class TreeViewElement extends HTMLElement {
     const {signal} = (this.#abortController = new AbortController())
     this.addEventListener('click', this, {signal})
     this.addEventListener('focusin', this, {signal})
+    this.addEventListener('keydown', this, {signal})
 
     useRovingTabIndex(this)
   }
@@ -31,8 +32,6 @@ export class TreeViewElement extends HTMLElement {
   }
 
   #nodeForEvent(event: Event): Element | null {
-    if (event.type !== 'click' && event.type !== 'focusin') return null
-
     const target = event.target as Element
     const node = target.closest('[role=treeitem]')
     if (!node) return null
@@ -44,10 +43,30 @@ export class TreeViewElement extends HTMLElement {
   }
 
   #handleNodeEvent(node: Element, event: Event) {
-    if (this.#eventIsActivation(event)) {
+    if (this.#eventIsCheckboxToggle(event)) {
+      this.#handleCheckboxToggle(node)
+    } else if (this.#eventIsActivation(event)) {
       this.#handleNodeActivated(node)
     } else if (event.type === 'focusin') {
       this.#handleNodeFocused(node)
+    } else if (event instanceof KeyboardEvent) {
+      this.#handleNodeKeyboardEvent(event, node)
+    }
+  }
+
+  #eventIsCheckboxToggle(event: Event) {
+    return event.type === 'click' && (event.target as HTMLElement).closest('.TreeViewItemCheckbox') !== null
+  }
+
+  #handleCheckboxToggle(node: Element) {
+    // only handle checking of leaf nodes
+    const type = this.getNodeType(node)
+    if (type !== 'leaf') return
+
+    if (this.#isNodeChecked(node)) {
+      this.#setNodeChecked(node, 'false')
+    } else {
+      this.#setNodeChecked(node, 'true')
     }
   }
 
@@ -87,6 +106,25 @@ export class TreeViewElement extends HTMLElement {
     const previousNode = this.querySelector('[aria-selected=true]')
     previousNode?.setAttribute('aria-selected', 'false')
     node.setAttribute('aria-selected', 'true')
+  }
+
+  #handleNodeKeyboardEvent(event: KeyboardEvent, node: Element) {
+    if (!node || this.getNodeType(node) !== 'leaf') {
+      return
+    }
+
+    switch (event.key) {
+      case ' ':
+        event.preventDefault()
+
+        if (this.#isNodeChecked(node)) {
+          this.#setNodeChecked(node, 'false')
+        } else {
+          this.#setNodeChecked(node, 'true')
+        }
+
+        break
+    }
   }
 
   getNodePath(node: Element): string[] {
@@ -137,9 +175,38 @@ export class TreeViewElement extends HTMLElement {
     node.toggle()
   }
 
+  checkAtPath(path: string[]) {
+    const node = this.nodeAtPath(path)
+    if (!node) return
+
+    this.#setNodeChecked(node, 'true')
+  }
+
+  uncheckAtPath(path: string[]) {
+    const node = this.nodeAtPath(path)
+    if (!node) return
+
+    this.#setNodeChecked(node, 'false')
+  }
+
+  toggleCheckedAtPath(path: string[]) {
+    if (this.isCheckedAtPath(path)) {
+      this.uncheckAtPath(path)
+    } else {
+      this.checkAtPath(path)
+    }
+  }
+
+  isCheckedAtPath(path: string[]): boolean {
+    const node = this.nodeAtPath(path)
+    if (!node) return false
+
+    return this.#isNodeChecked(node)
+  }
+
   nodeAtPath(path: string[], selector?: string): HTMLElement | null {
     const pathStr = JSON.stringify(path)
-    return this.querySelector(`${selector}[data-path="${CSS.escape(pathStr)}"]`)
+    return this.querySelector(`${selector || ''}[data-path="${CSS.escape(pathStr)}"]`)
   }
 
   subTreeAtPath(path: string[]): TreeViewSubTreeNodeElement | null {
@@ -151,6 +218,15 @@ export class TreeViewElement extends HTMLElement {
 
   leafAtPath(path: string[]): HTMLLIElement | null {
     return this.nodeAtPath(path, '[data-node-type=leaf]') as HTMLLIElement | null
+  }
+
+  #setNodeChecked(node: Element, value: 'true' | 'false' | 'mixed') {
+    node.setAttribute('aria-checked', value)
+  }
+
+  #isNodeChecked(node: Element): boolean {
+    const ariaChecked = node.getAttribute('aria-checked')
+    return ariaChecked === 'true' || ariaChecked === 'mixed'
   }
 }
 
