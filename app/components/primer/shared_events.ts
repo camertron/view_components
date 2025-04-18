@@ -4,10 +4,15 @@ export type ItemActivatedEvent = {
   value: string | null
 }
 
-export type TreeViewEvent = {
+export type TreeViewNodeType = 'leaf' | 'sub-tree'
+export type TreeViewCheckedValue = 'true' | 'false' | 'mixed'
+
+export type TreeViewNodeInfo = {
   node: Element
-  type: 'leaf' | 'sub-tree'
+  type: TreeViewNodeType
   path: string[]
+  checkedValue: TreeViewCheckedValue
+  previousCheckedValue: TreeViewCheckedValue
 }
 
 declare global {
@@ -15,9 +20,12 @@ declare global {
     itemActivated: CustomEvent<ItemActivatedEvent>
     beforeItemActivated: CustomEvent<ItemActivatedEvent>
 
-    treeViewNodeActivated: CustomEvent<TreeViewEvent>
-    treeViewBeforeNodeActivated: CustomEvent<TreeViewEvent>
-    treeViewNodeExpanded: CustomEvent<TreeViewEvent>
-    treeViewNodeCollapsed: CustomEvent<TreeViewEvent>
+    treeViewNodeActivated: CustomEvent<TreeViewNodeInfo>
+    treeViewBeforeNodeActivated: CustomEvent<TreeViewNodeInfo>
+    treeViewNodeExpanded: CustomEvent<TreeViewNodeInfo>
+    treeViewNodeCollapsed: CustomEvent<TreeViewNodeInfo>
+
+    treeViewNodeChecked: CustomEvent<TreeViewNodeInfo[]>
+    treeViewBeforeNodeChecked: CustomEvent<TreeViewNodeInfo[]>
   }
 }

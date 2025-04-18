@@ -3,6 +3,7 @@ import {TreeViewIconPairElement} from './tree_view_icon_pair_element'
 import {observeMutationsUntilConditionMet} from '../../utils'
 import {TreeViewIncludeFragmentElement} from './tree_view_include_fragment_element'
 import {TreeViewElement} from './tree_view'
+import type {TreeViewNodeInfo} from '../../shared_events'
 
 type LoadingState = 'loading' | 'error' | 'success'
 
@@ -75,30 +76,26 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
     const checkedMutationObserver = new MutationObserver(() => {
       let checkType = 'unknown'
 
-      if (this.loadingIndicator) {
-        checkType = 'false'
-      } else {
-        for (const node of this.eachDirectDescendantNode()) {
-          switch (`${checkType} ${node.getAttribute('aria-checked') || 'false'}`) {
-            case 'unknown mixed':
-            case 'false mixed':
-            case 'true mixed':
-            case 'false true':
-            case 'true false':
-              checkType = 'mixed'
-              break
+      for (const node of this.eachDirectDescendantNode()) {
+        switch (`${checkType} ${node.getAttribute('aria-checked') || 'false'}`) {
+          case 'unknown mixed':
+          case 'false mixed':
+          case 'true mixed':
+          case 'false true':
+          case 'true false':
+            checkType = 'mixed'
+            break
 
-            case 'unknown false':
-              checkType = 'false'
-              break
+          case 'unknown false':
+            checkType = 'false'
+            break
 
-            case 'unknown true':
-              checkType = 'true'
-          }
+          case 'unknown true':
+            checkType = 'true'
         }
       }
 
-      if (this.node?.getAttribute('aria-checked') !== checkType) {
+      if (checkType !== 'unknown' && this.node?.getAttribute('aria-checked') !== checkType) {
         this.node?.setAttribute('aria-checked', checkType)
       }
     })
@@ -314,25 +311,37 @@ export class TreeViewSubTreeNodeElement extends HTMLElement {
 
   toggleChecked() {
     const checkValue = this.node.getAttribute('aria-checked') || 'false'
+    const newCheckValue = checkValue === 'false' ? 'true' : 'false'
+    const nodeInfos: TreeViewNodeInfo[] = []
+    const rootInfo = this.treeView?.infoFromNode(this.node, newCheckValue)
+    if (rootInfo) nodeInfos.push(rootInfo)
 
-    switch (checkValue) {
-      case 'false':
-        // check all sub nodes, including leaves and trees
-        for (const node of this.eachDescendantNode()) {
-          node.setAttribute('aria-checked', 'true')
-        }
-
-        break
-
-      case 'true':
-      case 'mixed':
-        // uncheck all sub nodes, including leaves and trees
-        for (const node of this.eachDescendantNode()) {
-          node.setAttribute('aria-checked', 'false')
-        }
-
-        break
+    for (const node of this.eachDescendantNode()) {
+      const info = this.treeView?.infoFromNode(node, newCheckValue)
+      if (info) nodeInfos.push(info)
     }
+
+    const checkSuccess = this.dispatchEvent(
+      new CustomEvent('treeViewBeforeNodeChecked', {
+        bubbles: true,
+        cancelable: true,
+        detail: nodeInfos,
+      }),
+    )
+
+    if (!checkSuccess) return
+
+    for (const nodeInfo of nodeInfos) {
+      nodeInfo.node.setAttribute('aria-checked', newCheckValue)
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('treeViewNodeChecked', {
+        bubbles: true,
+        cancelable: true,
+        detail: nodeInfos,
+      }),
+    )
   }
 
   #update() {

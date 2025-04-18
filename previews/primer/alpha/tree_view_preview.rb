@@ -5,17 +5,21 @@ module Primer
     # @label TreeView
     class TreeViewPreview < ViewComponent::Preview
       # @param expanded [Boolean] toggle
-      def default(expanded: false)
+      # @param select_variant [Symbol] select [multiple, none]
+      def default(expanded: false, select_variant: :none)
         render_with_template(locals: {
-          expanded: coerce_bool(expanded)
+          expanded: coerce_bool(expanded),
+          select_variant: select_variant.to_sym
         })
       end
 
       # @label Playground
       #
+      # @param expanded [Boolean] toggle
       # @param select_variant [Symbol] select [multiple, none]
-      def playground(select_variant: :none)
+      def playground(expanded: false, select_variant: :none)
         render_with_template(locals: {
+          expanded: coerce_bool(expanded),
           select_variant: select_variant.to_sym,
           populate: -> (*args) { populate(*args) }
         })
@@ -34,7 +38,7 @@ module Primer
         render_with_template(locals: {
           simulate_failure: coerce_bool(simulate_failure),
           simulate_empty: coerce_bool(simulate_empty),
-          select_variant: select_variant
+          select_variant: select_variant.to_sym
         })
       end
 
@@ -47,7 +51,7 @@ module Primer
         render_with_template(locals: {
           simulate_failure: coerce_bool(simulate_failure),
           simulate_empty: coerce_bool(simulate_empty),
-          select_variant: select_variant
+          select_variant: select_variant.to_sym
         })
       end
 
@@ -70,7 +74,7 @@ module Primer
           leading_visual_icon: leading_visual_icon,
           leading_action_icon: leading_action_icon,
           trailing_visual_icon: trailing_visual_icon,
-          select_variant: select_variant
+          select_variant: select_variant.to_sym
         })
       end
 

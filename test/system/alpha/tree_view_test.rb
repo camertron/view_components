@@ -18,6 +18,10 @@ module Alpha
       find(selector_for(*path), match: :first).trigger(:click)
     end
 
+    def check_at_path(*path)
+      find("#{selector_for(*path)} .TreeViewItemCheckbox", match: :first).trigger(:click)
+    end
+
     def label_at_path(*path)
       label_of(node_at_path(*path))
     end
@@ -56,6 +60,14 @@ module Alpha
 
     def assert_path_selected(*path)
       assert_selector "#{selector_for(*path)}[aria-selected=true]"
+    end
+
+    def assert_path_checked(*path, value: :true)
+      assert_selector "#{selector_for(*path)}[aria-checked='#{value}']"
+    end
+
+    def refute_path_checked(*path, value: :true)
+      refute_selector "#{selector_for(*path)}[aria-checked='#{value}']"
     end
 
     def remove_fail_param_from_fragment_src_for(*path)
@@ -144,24 +156,6 @@ module Alpha
       assert_path_selected("src", "icon_button.rb")
     end
 
-    def test_arrow_down_selects_next_visible_node
-      visit_preview(:default)
-
-      keyboard.type(:tab, :down)
-
-      assert_equal label_of(active_element), "action_menu.rb"
-      assert_path_selected("action_menu.rb")
-    end
-
-    def test_arrow_down_selects_expanded_item
-      visit_preview(:default)
-
-      keyboard.type(:tab, :enter, :down)
-
-      assert_equal label_of(active_element), "button.rb"
-      assert_path_selected("src", "button.rb")
-    end
-
     def test_tree_tabbable_after_parent_of_focused_item_is_collapsed
       visit_preview(:default, expanded: true)
 
@@ -172,6 +166,74 @@ module Alpha
 
       # collapsed node now tabbable
       assert_path_tabbable("src")
+    end
+
+    ##### KEYBOARD NAVIGATION #####
+
+    def test_expands_on_enter
+      visit_preview(:default)
+
+      keyboard.type(:tab, :enter)
+      assert_path("src", "button.rb")
+    end
+
+    def test_collapses_on_enter
+      visit_preview(:default)
+
+      keyboard.type(:tab, :enter)
+      assert_path("src", "button.rb")
+
+      keyboard.type(:enter)
+      refute_path("src", "button.rb")
+    end
+
+    def test_expands_on_right_arrow
+      visit_preview(:default)
+
+      keyboard.type(:tab, :right)
+      assert_path("src", "button.rb")
+    end
+
+    def test_collapses_on_left_arrow
+      visit_preview(:default)
+
+      keyboard.type(:tab, :right)
+      assert_path("src", "button.rb")
+
+      keyboard.type(:left)
+      refute_path("src", "button.rb")
+    end
+
+    def test_arrow_down_selects_next_visible_node
+      visit_preview(:default)
+
+      keyboard.type(:tab, :down)
+
+      assert_equal label_of(active_element), "action_menu.rb"
+      assert_path_selected("action_menu.rb")
+    end
+
+    def test_arrow_up_selects_previous_visible_node
+      visit_preview(:default)
+
+      keyboard.type(:tab, :down)
+
+      assert_equal label_of(active_element), "action_menu.rb"
+      assert_path_selected("action_menu.rb")
+
+      keyboard.type(:up)
+
+      assert_equal label_of(active_element), "src"
+      assert_path_selected("src")
+    end
+
+    def test_arrow_down_selects_expanded_item
+      visit_preview(:default)
+
+      keyboard.type(:tab, :enter, :down)
+
+      assert_equal label_of(active_element), "button.rb"
+      assert_path_selected("src", "button.rb")
     end
 
     ##### LOADERS #####
@@ -286,6 +348,174 @@ module Alpha
       activate_at_path("src")
 
       assert_selector "#{selector_for("src")} .TreeViewItemContentText", text: "No items"
+    end
+
+    def capture_event(event_name, cancel: false)
+      evaluate_multiline_script(<<~JS)
+        window.treeViewEventDetails = null
+        const treeViewShouldCancelEvent = #{cancel}
+
+        document.querySelector('tree-view').addEventListener('#{event_name}', (event) => {
+          window.treeViewEventDetails = event.detail
+
+          if (treeViewShouldCancelEvent) {
+            event.preventDefault()
+          }
+        })
+      JS
+
+      yield
+
+      return page.evaluate_script("window.treeViewEventDetails")
+    end
+
+    ##### JAVASCRIPT EVENTS #####
+
+    def test_fires_event_before_activation
+      visit_preview(:default)
+
+      details = capture_event('treeViewBeforeNodeActivated') do
+        activate_at_path("src")
+      end
+
+      assert details["node"]
+      assert_equal details["type"], "sub-tree"
+      assert_equal details["path"], ["src"]
+      assert_equal details["checkedValue"], "false"
+      assert_equal details["previousCheckedValue"], "false"
+    end
+
+    def test_canceling_activation_event_prevents_expansion
+      visit_preview(:default)
+
+      refute_path "src", "button.rb"
+
+      capture_event('treeViewBeforeNodeActivated', cancel: true) do
+        activate_at_path("src")
+      end
+
+      # src should still be collapsed
+      refute_path "src", "button.rb"
+    end
+
+    def test_fires_activation_event
+      visit_preview(:default)
+
+      details = capture_event('treeViewNodeActivated') do
+        activate_at_path("src")
+      end
+
+      assert details["node"]
+      assert_equal details["type"], "sub-tree"
+      assert_equal details["path"], ["src"]
+      assert_equal details["checkedValue"], "false"
+      assert_equal details["previousCheckedValue"], "false"
+    end
+
+    def test_fires_event_before_checking
+      visit_preview(:default, select_variant: :multiple)
+
+      details = capture_event('treeViewBeforeNodeChecked') do
+        check_at_path("src")
+      end
+
+      assert_equal details.size, 3
+
+      assert details[0]["node"]
+      assert_equal details[0]["type"], "sub-tree"
+      assert_equal details[0]["path"], ["src"]
+      assert_equal details[0]["checkedValue"], "true"
+      assert_equal details[0]["previousCheckedValue"], "false"
+    end
+
+    def test_canceling_check_event_prevents_checking
+      visit_preview(:default, select_variant: :multiple)
+
+      refute_path_checked "src"
+
+      capture_event('treeViewBeforeNodeChecked', cancel: true) do
+        check_at_path("src")
+      end
+
+      # src should still not be checked
+      refute_path_checked "src"
+    end
+
+    def test_fires_check_event
+      visit_preview(:default, select_variant: :multiple)
+
+      details = capture_event('treeViewNodeChecked') do
+        check_at_path("src")
+      end
+
+      assert_equal details.size, 3
+
+      assert details[0]["node"]
+      assert_equal details[0]["type"], "sub-tree"
+      assert_equal details[0]["path"], ["src"]
+      assert_equal details[0]["checkedValue"], "true"
+      assert_equal details[0]["previousCheckedValue"], "false"
+    end
+
+    ##### CHECKBOX BEHAVIOR #####
+
+    def test_space_checks_leaf_node
+      visit_preview(:playground, select_variant: :multiple)
+
+      activate_at_path("primer")
+      activate_at_path("primer", "alpha")
+      refute_path_checked "primer", "alpha", "action_bar.pcss"
+
+      keyboard.type(:tab, :down, :down, :down, :space)
+      assert_path_checked "primer", "alpha", "action_bar.pcss"
+    end
+
+    def test_space_checks_sub_tree_node
+      visit_preview(:playground, select_variant: :multiple)
+
+      refute_path_checked "primer"
+
+      keyboard.type(:tab, :space)
+      assert_path_checked "primer"
+    end
+
+    def test_checking_sub_tree_node_checks_all_children
+      visit_preview(:default, expanded: true, select_variant: :multiple)
+
+      assert_path "src", "button.rb"
+      refute_path_checked "src", "button.rb"
+
+      assert_path "src", "button.rb"
+      refute_path_checked "src", "icon_button.rb"
+
+      check_at_path("src")
+
+      assert_path_checked "src"
+      assert_path_checked "src", "button.rb"
+      assert_path_checked "src", "icon_button.rb"
+    end
+
+    def test_unchecking_sub_tree_child_results_in_mixed_parent
+      visit_preview(:default, expanded: true, select_variant: :multiple)
+
+      check_at_path("src")
+      assert_path_checked "src"
+
+      check_at_path("src", "button.rb")  # uncheck
+      assert_path_checked "src", value: :mixed
+      refute_path_checked "src", "button.rb"
+      assert_path_checked "src", "icon_button.rb"
+    end
+
+    def test_checking_deeply_nested_child_results_in_all_mixed_ancestors
+      visit_preview(:playground, expanded: true, select_variant: :multiple)
+
+      check_at_path("primer", "alpha", "action_bar", "item.rb")
+
+      assert_path_checked "primer", value: :mixed
+      assert_path_checked "primer", "alpha", value: :mixed
+      assert_path_checked "primer", "alpha", "action_bar", value: :mixed
+      assert_path_checked "primer", "alpha", "action_bar", "item.rb"
     end
   end
 end

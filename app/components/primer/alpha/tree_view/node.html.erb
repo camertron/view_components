@@ -15,9 +15,9 @@
     <% end %>
     <div id=":r2a:" class="TreeViewItemContent">
       <% if @select_variant == :multiple %>
-        <button class="TreeViewItemCheckbox">
+        <div aria-hidden="true" class="TreeViewItemCheckbox" tabindex="-1">
           <div class="FormControl-checkbox"></div>
-        </button>
+        </div>
       <% end %>
       <% if leading_visual? %>
         <%= leading_visual %>

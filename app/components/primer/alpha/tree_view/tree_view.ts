@@ -1,6 +1,7 @@
 import {controller} from '@github/catalyst'
 import {TreeViewSubTreeNodeElement} from './tree_view_sub_tree_node_element'
 import {useRovingTabIndex} from './tree_view_roving_tab_index'
+import type {TreeViewNodeType, TreeViewCheckedValue, TreeViewNodeInfo} from '../../shared_events'
 
 @controller
 export class TreeViewElement extends HTMLElement {
@@ -63,26 +64,21 @@ export class TreeViewElement extends HTMLElement {
     const type = this.getNodeType(node)
     if (type !== 'leaf') return
 
-    if (this.#isNodeChecked(node)) {
-      this.#setNodeChecked(node, 'false')
+    if (this.getNodeCheckedValue(node) === 'true') {
+      this.#setNodeCheckedValue(node, 'false')
     } else {
-      this.#setNodeChecked(node, 'true')
+      this.#setNodeCheckedValue(node, 'true')
     }
   }
 
   #handleNodeActivated(node: Element) {
     const path = this.getNodePath(node)
-    const type = this.getNodeType(node)
 
     const activationSuccess = this.dispatchEvent(
       new CustomEvent('treeViewBeforeNodeActivated', {
         bubbles: true,
         cancelable: true,
-        detail: {
-          node,
-          type,
-          path,
-        },
+        detail: this.infoFromNode(node),
       }),
     )
 
@@ -93,11 +89,7 @@ export class TreeViewElement extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent('treeViewNodeActivated', {
         bubbles: true,
-        detail: {
-          node,
-          type,
-          path,
-        },
+        detail: this.infoFromNode(node),
       }),
     )
   }
@@ -117,10 +109,10 @@ export class TreeViewElement extends HTMLElement {
       case ' ':
         event.preventDefault()
 
-        if (this.#isNodeChecked(node)) {
-          this.#setNodeChecked(node, 'false')
+        if (this.getNodeCheckedValue(node) === 'true') {
+          this.#setNodeCheckedValue(node, 'false')
         } else {
-          this.#setNodeChecked(node, 'true')
+          this.#setNodeCheckedValue(node, 'true')
         }
 
         break
@@ -137,8 +129,8 @@ export class TreeViewElement extends HTMLElement {
     return []
   }
 
-  getNodeType(node: Element): string | null {
-    return node.getAttribute('data-node-type')
+  getNodeType(node: Element): TreeViewNodeType | null {
+    return node.getAttribute('data-node-type') as TreeViewNodeType | null
   }
 
   markCurrentAtPath(path: string[]) {
@@ -179,29 +171,34 @@ export class TreeViewElement extends HTMLElement {
     const node = this.nodeAtPath(path)
     if (!node) return
 
-    this.#setNodeChecked(node, 'true')
+    this.#setNodeCheckedValue(node, 'true')
   }
 
   uncheckAtPath(path: string[]) {
     const node = this.nodeAtPath(path)
     if (!node) return
 
-    this.#setNodeChecked(node, 'false')
+    this.#setNodeCheckedValue(node, 'false')
   }
 
   toggleCheckedAtPath(path: string[]) {
-    if (this.isCheckedAtPath(path)) {
-      this.uncheckAtPath(path)
-    } else {
-      this.checkAtPath(path)
+    const node = this.nodeAtPath(path)
+    if (!node) return
+
+    if (this.getNodeType(node) === 'leaf') {
+      if (this.getNodeCheckedValue(node) === 'true') {
+        this.uncheckAtPath(path)
+      } else {
+        this.checkAtPath(path)
+      }
     }
   }
 
-  isCheckedAtPath(path: string[]): boolean {
+  checkedValueAtPath(path: string[]): TreeViewCheckedValue {
     const node = this.nodeAtPath(path)
-    if (!node) return false
+    if (!node) return 'false'
 
-    return this.#isNodeChecked(node)
+    return this.getNodeCheckedValue(node)
   }
 
   nodeAtPath(path: string[], selector?: string): HTMLElement | null {
@@ -220,13 +217,31 @@ export class TreeViewElement extends HTMLElement {
     return this.nodeAtPath(path, '[data-node-type=leaf]') as HTMLLIElement | null
   }
 
-  #setNodeChecked(node: Element, value: 'true' | 'false' | 'mixed') {
-    node.setAttribute('aria-checked', value)
+  #setNodeCheckedValue(node: Element, value: TreeViewCheckedValue) {
+    node.setAttribute('aria-checked', value.toString())
   }
 
-  #isNodeChecked(node: Element): boolean {
-    const ariaChecked = node.getAttribute('aria-checked')
-    return ariaChecked === 'true' || ariaChecked === 'mixed'
+  getNodeCheckedValue(node: Element): TreeViewCheckedValue {
+    return (node.getAttribute('aria-checked') || 'false') as TreeViewCheckedValue
+  }
+
+  // PRIVATE API METHOD
+  //
+  // This would normally be marked private, but it's called by TreeViewSubTreeNodes
+  // and thus must be public.
+  infoFromNode(node: Element, newCheckedValue?: TreeViewCheckedValue): TreeViewNodeInfo | null {
+    const type = this.getNodeType(node)
+    if (!type) return null
+
+    const checkedValue = this.getNodeCheckedValue(node)
+
+    return {
+      node,
+      type,
+      path: this.getNodePath(node),
+      checkedValue: newCheckedValue || checkedValue,
+      previousCheckedValue: checkedValue,
+    }
   }
 }
 
