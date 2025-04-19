@@ -54,6 +54,7 @@ module Primer
             label = system_arguments.delete(:label)
 
             Visual.new(
+              id: nil,
               visual: Icon.new(**system_arguments),
               label: label
             )

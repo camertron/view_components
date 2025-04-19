@@ -48,8 +48,40 @@ module Primer
 
         assert_selector("li[role=treeitem][data-path=\"[\\\"src\\\"]\"]") do |node|
           # this should be visually positioned after the node's label
-          node.assert_selector(":nth-child(4) svg.octicon-diff-modified")
+          node.assert_selector(":nth-child(5) svg.octicon-diff-modified")
         end
+      end
+
+      def test_node_described_by_leading_visual
+        render_inline(Primer::Alpha::TreeView.new) do |tree|
+          tree.with_leaf(label: "src") do |node|
+            node.with_leading_visual_icon(icon: :"file-directory-fill", label: "File folder")
+          end
+        end
+
+        assert_selector "[data-test-selector='tree-view-visual-label']", text: "File folder"
+
+        label_id = page
+          .find_css("[data-test-selector='tree-view-visual-label']")
+          .attribute('id')
+          .value
+
+        assert_selector "li[aria-describedby='#{label_id}']"
+      end
+
+      def test_node_labelled_by_content
+        render_inline(Primer::Alpha::TreeView.new) do |tree|
+          tree.with_leaf(label: "src")
+        end
+
+        assert_selector ".TreeViewItemContent", text: "src"
+
+        content_id = page
+          .find_css(".TreeViewItemContent")
+          .attribute('id')
+          .value
+
+        assert_selector "li[aria-labelledby='#{content_id}']"
       end
     end
   end
