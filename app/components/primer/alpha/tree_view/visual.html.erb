@@ -1,6 +1,4 @@
-<% if @label %>
-  <div class="sr-only TreeViewVisuallyHidden" aria-hidden="true" id=":r2b:"><%= @label %></div>
-<% end %>
+<div class="sr-only TreeViewVisuallyHidden" aria-hidden="true" id="<%= @id %>"><%= @label %></div>
 <div class="TreeViewItemVisual" aria-hidden="true">
   <%= render(@visual) %>
 </div>

@@ -6,7 +6,12 @@ module Primer
       class LeafNode < Primer::Component
         renders_one :leading_visual, types: {
           icon: lambda { |label: nil, **system_arguments|
+            merge_system_arguments!(
+              aria: { describedby: leading_visual_label_id }
+            )
+
             Visual.new(
+              id: leading_visual_label_id,
               visual: Icon.new(**system_arguments),
               label: label
             )
@@ -44,6 +49,16 @@ module Primer
           )
 
           @node = Primer::Alpha::TreeView::Node.new(**@system_arguments)
+        end
+
+        private
+
+        def base_id
+          @base_id ||= self.class.generate_id
+        end
+
+        def leading_visual_label_id
+          @leading_visual_id ||= "#{base_id}-leading-visual-label"
         end
       end
     end

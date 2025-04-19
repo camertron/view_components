@@ -34,7 +34,13 @@ module Primer
         # @param select_variant [Symbol] Controls the type of checkbox that appears. <%= one_of(SELECT_VARIANT_OPTIONS) %>
         # @param checked [Boolean | String] The checked state of the node's checkbox. <%= one_of(CHECKED_STATES) %>
         # @param system_arguments [Hash] The arguments accepted by <%= link_to_component(Primer::Alpha::ActionList) %>.
-        def initialize(path:, current: false, select_variant: DEFAULT_SELECT_VARIANT, checked: DEFAULT_CHECKED_STATE, **system_arguments)
+        def initialize(
+          path:,
+          current: false,
+          select_variant: DEFAULT_SELECT_VARIANT,
+          checked: DEFAULT_CHECKED_STATE,
+          **system_arguments
+        )
           @system_arguments = deny_tag_argument(**system_arguments)
 
           @path = path
@@ -51,8 +57,14 @@ module Primer
           )
 
           @system_arguments[:aria] = merge_aria(
-            @system_arguments,
-            { aria: { level: level, selected: false, checked: checked } }
+            @system_arguments, {
+              aria: {
+                level: level,
+                selected: false,
+                checked: checked,
+                labelledby: content_id
+              }
+            }
           )
 
           @system_arguments[:data] = merge_data(
@@ -73,18 +85,39 @@ module Primer
         end
 
         def merge_system_arguments!(**other_arguments)
+          @system_arguments[:aria] = merge_aria(
+            @system_arguments,
+            other_arguments
+          )
+
+          @system_arguments[:data] = merge_data(
+            @system_arguments,
+            other_arguments
+          )
+
           @system_arguments.merge!(**other_arguments)
         end
 
         private
 
         def before_render
-          return unless leading_action?
+          if leading_visual?
+          end
 
-          @system_arguments[:data] = merge_data(
-            @system_arguments,
-            { data: { "has-leading-action": true } }
-          )
+          if leading_action?
+            @system_arguments[:data] = merge_data(
+              @system_arguments,
+              { data: { "has-leading-action": true } }
+            )
+          end
+        end
+
+        def content_id
+          @content_id ||= "#{base_id}-content"
+        end
+
+        def base_id
+          @base_id ||= self.class.generate_id
         end
       end
     end

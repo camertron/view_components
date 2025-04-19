@@ -4,7 +4,8 @@ module Primer
   module Alpha
     class TreeView
       class Visual < Primer::Component
-        def initialize(visual:, label: nil)
+        def initialize(id:, visual:, label: nil)
+          @id = id
           @visual = visual
           @label = label
         end

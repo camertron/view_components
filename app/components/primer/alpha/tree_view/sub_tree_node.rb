@@ -5,17 +5,22 @@ module Primer
     class TreeView
       class SubTreeNode < Primer::Component
         renders_one :leading_visual, types: {
-          icon: lambda { |**system_arguments|
-            label = system_arguments.delete(:label)
+          icon: lambda { |label: nil, **system_arguments|
+            merge_system_arguments!(
+              aria: { describedby: leading_visual_label_id }
+            )
 
             Visual.new(
+              id: leading_visual_label_id,
               label: label,
               visual: Icon.new(**system_arguments)
             )
           },
 
-          icons: lambda { |**system_arguments|
-            label = system_arguments.delete(:label)
+          icons: lambda { |label: nil, **system_arguments|
+            merge_system_arguments!(
+              aria: { describedby: leading_visual_label_id }
+            )
 
             system_arguments[:data] = merge_data(
               system_arguments,
@@ -23,6 +28,7 @@ module Primer
             )
 
             Visual.new(
+              id: leading_visual_label_id,
               label: label,
               visual: IconPair.new(
                 **system_arguments,
@@ -84,6 +90,16 @@ module Primer
           )
 
           @node = Primer::Alpha::TreeView::Node.new(**@system_arguments, path: @sub_tree.path)
+        end
+
+        private
+
+        def base_id
+          @base_id ||= self.class.generate_id
+        end
+
+        def leading_visual_label_id
+          @leading_visual_id ||= "#{base_id}-leading-visual-label"
         end
       end
     end
